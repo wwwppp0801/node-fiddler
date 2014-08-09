@@ -28,6 +28,12 @@ for(var c in config){
 }
 ```
 
+# 使用方法
+
+```bash
+\# node httpproxy.js
+```
+
 
 # 尚未解决的已知问题
 
