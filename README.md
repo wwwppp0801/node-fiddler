@@ -31,7 +31,7 @@ for(var c in config){
 # 使用方法
 
 ```bash
-# node httpproxy.js
+node httpproxy.js
 ```
 
 
