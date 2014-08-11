@@ -16,12 +16,14 @@ var config={
         //[/^http:\/\/m1-ps-wwwui0-j10\.m1\.baidu\.com:8090\/cache/(.*)/,'file:{pwd}/cache/{1}'],
         //全部替换成wd=qq
         [/^http:\/\/www\.baidu\.com\/s/,'{_}?wd=qq'],
+
         //高级功能，走回调
-        /*
-        [/^http:\/\/www\.baidu\.com\/s/,function(url){
-            
+        
+        ["http://s1.bdstatic.com/r/www/cache/static/global/js/all_async_popstate_40a67976.js","{_}",function(code){
+            code+=";alert('testtest');";
+            return code;
         }],
-        */
+        
     ],
 };
 for(var c in config){

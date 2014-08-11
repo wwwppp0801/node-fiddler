@@ -29,7 +29,7 @@ function matchAutoResponder(request,socket){
         var rule=rules[i];
         if(rule[0]===url.href){
             filename=rule[1];
-            matched=[filename];
+            matched=[url.href];
             break;
         }
 
@@ -42,7 +42,7 @@ function matchAutoResponder(request,socket){
     if(filename){
         var file=processFilename(filename,matched);
 
-        return strategy[file.schema](file,socket,request);
+        return strategy[file.schema](file,socket,request,rule[2]);
 
         //return true;
     }
@@ -50,7 +50,7 @@ function matchAutoResponder(request,socket){
 
 
 var strategy={
-    "file":function (file,socket,request){
+    "file":function (file,socket,request,callback){
         var stat;
         try{
             stat=fs.lstatSync(file.name);
@@ -68,28 +68,42 @@ var strategy={
                 'Content-Type: '+get_content_type(file.name),
                 'Cache-Control: private',
                 'Content-Length: '+stat.size].join(CRLF)+CRLF+CRLF);
-
-        fs.readFile(file.name,function(err,data){
-            if (err) throw err;
-            socket.write(data);
-        });
+        if(typeof callback=='function'){
+            var content=fs.readFileSync(filename, {encoding:'utf-8'});
+            socket.write(callback(content));
+        }else{
+            fs.readFile(file.name,function(err,data){
+                if (err) throw err;
+                socket.write(data);
+            });
+        }
         return true;
     },
-    'http':function(file,socket,request){
+    'http':function(file,socket,request,callback){
         //var url=request.getUrl();
         log.info('request http: ' + JSON.stringify(file));
         var url=URL.parse(file.name);       
+        var headers={};
+        if(request.getHeader("Cookie")){
+            headers.cookie=request.getHeader("Cookie");
+        }
+        if(request.getHeader("Referer")){
+            headers.referer=request.getHeader("Referer");
+        }
+        if(request.getHeader("User-Agent")){
+            headers['user-agent']=request.getHeader("User-Agent");
+        }
+        if(request.getHeader("Host")){
+            headers['host']=request.getHeader("Host");
+        }
         var options = {
-            headers:{
-                'cookie':request.getHeader("Cookie",""),
-                'referer':request.getHeader("Referer",""),
-                'user-agent': request.getHeader("User-Agent",""),
-            },
+            headers:headers,
             hostname: url.host,
             port: url.port?url.port:80,
-            path: url.pathname+url.search,
+            path: url.pathname+(url.search?url.search:""),
             method: request.getMethod()
         };
+        log.info('options: ' + JSON.stringify(options));
 
         var req = http.request(options, function(res) {
             log.info('STATUS: ' + res.statusCode);
@@ -102,11 +116,16 @@ var strategy={
             });
             res.on("end",function(){
                 log.info("send to local");
+                var data=bm.slice(0);
+                if(typeof callback=='function'){
+                    data=new Buffer(callback(data.toString('utf-8')));
+                }
+
                 socket.write(['HTTP/1.1 200 OK',
                         'Content-Type: '+res.headers['content-type'],//get_content_type(file.name),
                         'Cache-Control: private',
-                        'Content-Length: '+bm.size()].join(CRLF)+CRLF+CRLF);
-                socket.write(bm.slice(0));
+                        'Content-Length: '+data.length].join(CRLF)+CRLF+CRLF);
+                socket.write(data);
             });
             res.on("close",function(){
                 socket.end();
@@ -135,7 +154,7 @@ function processFilename(filename,matched){
     }
     filename=format(filename,args);
 
-    log.info("replaced filename: "+filename)
+    log.info("replaced filename: "+filename+ "  "+JSON.stringify(args));
 
 
     var schema=filename.match(/^([a-z]+):/);
