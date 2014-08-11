@@ -27,7 +27,7 @@ exports.local_request=local_request=function (bm){
     }
     
     
-    function getHeader(name){
+    function getHeader(name,def){
         if(!headers){
             var header_rest=raw_header.substr(raw_header.indexOf(CRLF)+CRLF.length,http_header_length);
             headers={};
@@ -41,7 +41,7 @@ exports.local_request=local_request=function (bm){
             });
         }
         if(name){
-            return headers[name];
+            return headers[name]?headers[name]:def;
         }else{
             return headers;
         }

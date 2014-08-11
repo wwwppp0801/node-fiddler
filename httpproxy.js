@@ -8,9 +8,8 @@ optparser = require("./optparser");
 BufferManager=require('./buffermanager').BufferManager;
 local_request=require('./request').local_request;
 remote_response=require('./response').remote_response;
-var fs = require('fs');
-var get_content_type=require("./content_type").get;
-var config=require("./config");
+config=require("./config");
+var matchAutoResponder=require("./auto_responder").matchAutoResponder;
 
 CRLF = "\r\n";
 SERVER_CMD_START=[0x00,0x01];
@@ -321,50 +320,6 @@ function(socket) {
     });
 });
 
-function matchAutoResponder(request,socket){
-    var rules=config.auto_responder;   
-    var url=request.getUrl();
-    //log.info(url.href);
-    var filename;
-    var i;
-    for(i=0;i<rules.length;i++){
-        var rule=rules[i];
-        if(rule[0]===url.href){
-            filename=rule[1];
-            break;
-        }
-        if(rule[0] instanceof RegExp && url.href.match(rule[0])){
-            filename=rule[1];
-            break;
-        }
-    }
-
-    if(filename){
-        var stat;
-        try{
-            stat=fs.lstatSync(filename);
-        }catch(e){
-            log.error("stat error:"+e);
-        }
-        if(!stat){
-            return;
-        }
-        if(!stat.isFile()){
-            log.error("file:'"+filename+"' is not file");
-            return;
-        }
-        socket.write(['HTTP/1.1 200 OK',
-                'Content-Type: '+get_content_type(filename),
-                'Cache-Control: private',
-                'Content-Length: '+stat.size].join(CRLF)+CRLF+CRLF);
-
-        fs.readFile(filename,function(err,data){
-            if (err) throw err;
-            socket.write(data);
-        });
-        return true;
-    }
-}
 
 
 server.maxConnections=config.maxConnections;
