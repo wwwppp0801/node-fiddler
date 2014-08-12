@@ -8,6 +8,7 @@ function reload_config(){
         var config=(eval(config_json));
     }catch(e){
         log.error(e);
+        return;
     }
     for(var c in config){
         exports[c]=config[c];
