@@ -1,13 +1,3 @@
-# node-fiddler
-
-- 这是node写的http代理
-- 基于socket，纯手工编写，支持keep-alive, chunked等功能
-- 可以实现fiddler的auto\_responder功能(就是将某个请求用本地文件返回)
-- 可以实现类似改hosts文件的功能
-
-# config.json介绍
-- 可以在proxy启动的状态下，改变config.json文件的内容，会自动生效
-```javascript
 ({
     'listen_host':'127.0.0.1',
     'listen_port':'8083',
@@ -38,16 +28,3 @@
     ],
 })
 
-```
-
-# 使用方法
-
-```bash
-node httpproxy.js
-```
-
-
-# 尚未解决的已知问题
-
-- 没有实现multipart/form-data，上传文件可能会有问题
-- 没有实现https协议的代理

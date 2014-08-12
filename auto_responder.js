@@ -1,6 +1,7 @@
 var get_content_type=require("./content_type").get;
 var fs = require('fs');
 var http = require('http');
+var config=require("./config");
 
 
 function format(string,args){

@@ -8,7 +8,7 @@ optparser = require("./optparser");
 BufferManager=require('./buffermanager').BufferManager;
 local_request=require('./request').local_request;
 remote_response=require('./response').remote_response;
-config=require("./config");
+var config=require("./config");
 var matchAutoResponder=require("./auto_responder").matchAutoResponder;
 
 CRLF = "\r\n";
@@ -16,11 +16,6 @@ SERVER_CMD_START=[0x00,0x01];
 SERVER_CMD_END=[0xfe,0xff];
 DNSCache={};
 //DNSCache['www.baidu.com']={addresses:['127.0.0.1']};
-(function(){
-    config.hosts.forEach(function(host){
-        DNSCache[host[0]]={addresses:[host[1]]};
-    });
-})();
 
 function connectTo(socket,hostname,port){
     if(net.isIP(hostname)){

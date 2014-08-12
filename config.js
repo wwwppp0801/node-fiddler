@@ -1,31 +1,20 @@
-var config={
-    'listen_host':'127.0.0.1',
-    'listen_port':'8083',
-    'max_connections':1000,
-    'hosts':[
-//        ['www.baidu.com','127.0.0.1'],
-    ],
-    'auto_responder':[
-        ['http://www.baidu.com/','file:test.html'],
-        //['http://www.baidu.com/','http://127.0.0.1/'],
-        //[/^http:\/\/www\.baidu\.com\/s/,'testresult.html'],
-        //[/^http:\/\/www\.baidu\.com\/s/,'testresult.html'],
-        //替换成和query同名的文件
-        //[/^http:\/\/www\.baidu\.com\/s?.*wd=(\w+)/,'file:{1}.html'],
-        //替换目录
-        //[/^http:\/\/m1-ps-wwwui0-j10\.m1\.baidu\.com:8090\/cache/(.*)/,'file:{pwd}/cache/{1}'],
-        //全部替换成wd=qq
-        [/^http:\/\/www\.baidu\.com\/s/,'{_}?wd=qq'],
+var fs=require("fs");
+fs.watchFile('config.json', function (curr, prev) {
+    reload_config();
+});
+function reload_config(){
+    var config_json=fs.readFileSync("config.json",{encoding:'utf-8'});
+    try{
+        var config=(eval(config_json));
+    }catch(e){
+        log.error(e);
+    }
+    for(var c in config){
+        exports[c]=config[c];
+    }
 
-        //高级功能，走回调
-        
-        ["http://s1.bdstatic.com/r/www/cache/static/global/js/all_async_popstate_40a67976.js","{_}",function(code){
-            code+=";alert('testtest');";
-            return code;
-        }],
-        
-    ],
-};
-for(var c in config){
-    exports[c]=config[c];
+    config.hosts.forEach(function(host){
+        DNSCache[host[0]]={addresses:[host[1]]};
+    });
 }
+reload_config();
