@@ -248,3 +248,5 @@ Log.prototype = {
  */
 
 Log.prototype.__proto__ = EventEmitter.prototype;
+
+exports.instance= new Log(Log.INFO);

@@ -1,4 +1,7 @@
-exports.remote_response=remote_response=function (bm){
+"use strict";
+var CRLF = "\r\n";
+var log= require("./log").instance;
+exports.remote_response=function remote_response(bm){
 
     var CRLF_index=bm.indexOf(CRLF);
     var http_header_length=bm.indexOf(CRLF+CRLF);

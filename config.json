@@ -7,7 +7,7 @@
     ],
     'auto_responder':[
 
-        ['http://www.baidu.com/','file:test.html'],
+        //['http://www.baidu.com/','file:test.html'],
         //['http://www.baidu.com/','http://127.0.0.1/'],
         //[/^http:\/\/www\.baidu\.com\/s/,'testresult.html'],
         //[/^http:\/\/www\.baidu\.com\/s/,'testresult.html'],
@@ -16,14 +16,15 @@
         //替换目录
         //[/^http:\/\/m1-ps-wwwui0-j10\.m1\.baidu\.com:8090\/cache/(.*)/,'file:{pwd}/cache/{1}'],
         //全部替换成wd=qq
-        [/^http:\/\/www\.baidu\.com\/s/,'{_}?wd=qq'],
+        //[/^http:\/\/www\.baidu\.com\/s/,'{_}?wd=qq'],
 
         //高级功能，走回调
-        
-        ["http://s1.bdstatic.com/r/www/cache/static/global/js/all_async_popstate_40a67976.js","{_}",function(code){
+        /*
+         ["http://s1.bdstatic.com/r/www/cache/static/global/js/all_async_popstate_40a67976.js","{_}",function(code){
             code+=";alert('testtest');";
             return code;
         }],
+        */
         
     ],
 })

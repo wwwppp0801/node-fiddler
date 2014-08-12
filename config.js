@@ -15,7 +15,8 @@ function reload_config(){
     }
 
     config.hosts.forEach(function(host){
-        DNSCache[host[0]]={addresses:[host[1]]};
+        exports.DNSCache[host[0]]={addresses:[host[1]]};
     });
 }
+exports.DNSCache={};
 reload_config();

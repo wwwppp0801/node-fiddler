@@ -1,20 +1,19 @@
-net = require("net");
-util=require("util");
-URL=require("url");
-DNS=require("dns");
-Logger = require("./log");
-log = new Logger(Logger.INFO);
-optparser = require("./optparser");
-BufferManager=require('./buffermanager').BufferManager;
-local_request=require('./request').local_request;
-remote_response=require('./response').remote_response;
+"use strict";
+var net = require("net");
+var util=require("util");
+var URL=require("url");
+var DNS=require("dns");
+var log = require("./log").instance;
+var optparser = require("./optparser");
+var BufferManager=require('./buffermanager').BufferManager;
+var local_request=require('./request').local_request;
+var remote_response=require('./response').remote_response;
 var config=require("./config");
 var matchAutoResponder=require("./auto_responder").matchAutoResponder;
 
-CRLF = "\r\n";
-SERVER_CMD_START=[0x00,0x01];
-SERVER_CMD_END=[0xfe,0xff];
-DNSCache={};
+var SERVER_CMD_START=[0x00,0x01];
+var SERVER_CMD_END=[0xfe,0xff];
+var DNSCache=config.DNSCache;
 //DNSCache['www.baidu.com']={addresses:['127.0.0.1']};
 
 function connectTo(socket,hostname,port){
@@ -100,7 +99,8 @@ function create_remote_connecton(request,socket) {
     try{
         connectTo(remote_socket,hostname,port);
     }catch(e){
-        log.error("remote connection fail:"+e)
+        log.error("remote connection fail:"+e);
+
     }
     remote_socket.url=url;
     remote_socket.on("connect", function() {
@@ -155,16 +155,17 @@ function create_remote_connecton(request,socket) {
         clean_remote_socket(this);
         clean_client_socket(this.socket);
     });
-    remote_socket.on("connect",function(){
+    remote_socket.on("connect",function remote_socket_on_connect(){
         this.is_connected=true;
         try{
-            this.removeListener("connect",arguments.callee);
+            this.removeListener("connect",remote_socket_on_connect);
             //var request_raw=request.getSendHeader()+request.getBody();
             log.debug("remote connection established");
             log.debug("send:\n"+request.getSendHeader());
             this.write(request.getSendHeader());
             this.write(request.getBody());
         }catch(e){
+            log.error(e);
             throw e;
         }
     });
@@ -222,7 +223,8 @@ function parse_server_cmd(bm){
     return cmd;
 }
 
-COMMAND_TABLE={
+//TODO
+var COMMAND_TABLE={
     list:function(){
          },
     info:function(){
@@ -230,19 +232,11 @@ COMMAND_TABLE={
     loadconf:function(){
         },
     dnsshow:function(){
-            return DNSCache;
         },
     dnsclean:function(){         
-            log.debug('dnsclean');
-            DNSCache=[];
-            load_hosts();
-            return DNSCache;
         }
 }
 
-function load_hosts(){
-    //TODO load file "hosts" to DNSCache
-}
 
 function process_server_cmd(cmd,socket){
     var tokens=cmd.split(/\s+/);
@@ -262,7 +256,7 @@ function process_server_cmd(cmd,socket){
 }
 
 
-server=net.createServer(
+var server=net.createServer(
 function(socket) {
     //socket.on("connect", function() {
     log.debug("local connection established: " + socket.remoteAddress);

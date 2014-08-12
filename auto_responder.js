@@ -1,7 +1,11 @@
+"use strict;"
 var get_content_type=require("./content_type").get;
 var fs = require('fs');
 var http = require('http');
 var config=require("./config");
+var log = require("./log").instance;
+var CRLF = "\r\n";
+var URL=require("url");
 
 
 function format(string,args){

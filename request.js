@@ -1,5 +1,8 @@
-
-exports.local_request=local_request=function (bm){
+"use strict";
+var CRLF = "\r\n";
+var log = require("./log").instance;
+var URL=require("url");
+exports.local_request=function local_request(bm){
     var headers;
     var CRLF_index=bm.indexOf(CRLF);
     var http_header_length=bm.indexOf(CRLF+CRLF);
@@ -88,7 +91,7 @@ exports.local_request=local_request=function (bm){
         getSendHeader:function(){
             var tmp=[];
             var headers=this.getHeader();
-            for(h in headers){
+            for(var h in headers){
                 tmp.push(h+":"+headers[h]);
             }
             return this.getMethod()+" "+this.getQueryString()+" HTTP/"+this.getHttpVersion()+CRLF+
