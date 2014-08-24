@@ -103,7 +103,7 @@ var strategy={
         }
         var options = {
             headers:headers,
-            hostname: url.host,
+            hostname: url.host.replace(/:[0-9]+$/,""),
             port: url.port?url.port:80,
             path: url.pathname+(url.search?url.search:""),
             method: request.getMethod()
