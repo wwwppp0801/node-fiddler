@@ -311,6 +311,6 @@ function(socket) {
 
 
 
-server.maxConnections=config.maxConnections;
+server.maxConnections=config.max_connections;
 server.listen(config.listen_port,config.listen_host);
 
