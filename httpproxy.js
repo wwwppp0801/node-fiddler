@@ -345,6 +345,21 @@ function createServerCallbackFunc(netType){//netType is tls or net
             }
 
             var remote_socket=this.remote_socket=create_remote_connecton(request,socket,netType);
+            
+            if(request&&request.getMethod()=='CONNECT'){
+                remote_socket.removeAllListeners("connect");
+                remote_socket.removeAllListeners("data");
+                remote_socket.on("connect",function(){
+                    socket.removeAllListeners("data");
+                    socket.write('HTTP/1.1 200 Connection Established\r\n' +
+                            'Proxy-agent: Node-Proxy\r\n' +
+                            '\r\n');
+                    remote_socket.write(bm.toBuffer());
+                    remote_socket.pipe(socket);
+                    socket.pipe(remote_socket);
+                });
+            }
+            
         });
         
         socket.on("close", function() {

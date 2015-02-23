@@ -100,6 +100,9 @@ exports.local_request=function local_request(bm,netType){
         },
         getUrl:function(){
             var queryStr=this.getQueryString();
+            if(this.getMethod()=='CONNECT'){
+                queryStr="http://"+queryStr;
+            }
             if(queryStr[0]=='/' && this.getHeader("Host")){
                 queryStr=this.getHeader("Host")+queryStr;
                 if(netType===tls){
