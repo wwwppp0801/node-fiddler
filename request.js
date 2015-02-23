@@ -2,7 +2,8 @@
 var CRLF = "\r\n";
 var log = require("./log").instance;
 var URL=require("url");
-exports.local_request=function local_request(bm){
+var tls = require('tls');
+exports.local_request=function local_request(bm,netType){
     var headers;
     var CRLF_index=bm.indexOf(CRLF);
     var http_header_length=bm.indexOf(CRLF+CRLF);
@@ -100,7 +101,12 @@ exports.local_request=function local_request(bm){
         getUrl:function(){
             var queryStr=this.getQueryString();
             if(queryStr[0]=='/' && this.getHeader("Host")){
-                queryStr="http://"+this.getHeader("Host")+queryStr;
+                queryStr=this.getHeader("Host")+queryStr;
+                if(netType===tls){
+                    queryStr="https://"+queryStr;
+                }else{
+                    queryStr="http://"+queryStr;
+                }
             }
             log.debug(queryStr);
             if(!queryStr){

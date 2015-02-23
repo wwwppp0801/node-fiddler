@@ -26,7 +26,7 @@ function format(string,args){
 function matchAutoResponder(request,socket){
     var rules=config.auto_responder;   
     var url=request.getUrl();
-    //log.info(url.href);
+    log.info(url.href);
     var filename;
     var i;
     var matched;

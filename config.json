@@ -1,13 +1,13 @@
 ({
     'listen_host':'127.0.0.1',
     'listen_port':'8083',
+    'listen_https_port':'443',
     'max_connections':1000,
     'hosts':[
 //        ['www.baidu.com','127.0.0.1'],
     ],
     'auto_responder':[
-
-        //['http://www.baidu.com/','file:test.html'],
+        ['https://ss1.bdstatic.com/5eN1bjq8AAUYm2zgoY3K/r/www/cache/static/protocol/https/global/js/all_instant_search1_c37a68b8.js','all_instant_search1_c37a68b8.js'],
         //['http://www.baidu.com/','http://127.0.0.1/'],
         //[/^http:\/\/www\.baidu\.com\/s/,'testresult.html'],
         //[/^http:\/\/www\.baidu\.com\/s/,'testresult.html'],

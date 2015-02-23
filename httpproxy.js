@@ -3,6 +3,8 @@ var net = require("net");
 var util=require("util");
 var URL=require("url");
 var DNS=require("dns");
+var tls = require('tls');
+var fs = require('fs');
 var log = require("./log").instance;
 var optparser = require("./optparser");
 var BufferManager=require('./buffermanager').BufferManager;
@@ -15,6 +17,17 @@ var SERVER_CMD_START=[0x00,0x01];
 var SERVER_CMD_END=[0xfe,0xff];
 var DNSCache=config.DNSCache;
 //DNSCache['www.baidu.com']={addresses:['127.0.0.1']};
+
+var httpsOptions = {
+  key: fs.readFileSync('server-key.pem'),
+  cert: fs.readFileSync('server-cert.pem'),
+
+  // This is necessary only if using the client certificate authentication.
+  //requestCert: false,
+
+  // This is necessary only if the client uses the self-signed certificate.
+  //ca: [ fs.readFileSync('server-cert.pem') ]
+};
 
 function connectTo(socket,hostname,port){
     if(net.isIP(hostname)){
@@ -71,10 +84,20 @@ function delete_from_connection_pool(remote_socket){
     }
 }
 
-function create_remote_connecton(request,socket) {
+function create_remote_connecton(request,socket,netType) {
     var url=request.getUrl();
-    var port = url.port?url.port:80;
+    var port;
+    if(!url.port){
+        if(url.protocol=='https:'){
+            port=443;
+        }else{
+            port=80;
+        }
+    }else{
+        port=url.port;
+    }
     var hostname= url.hostname;
+    //console.log(url);
     var remote_socket;
     //socket = net.createConnection(port, hostname);
     if(remote_socket=get_cached_remote_connection(url)){
@@ -95,17 +118,38 @@ function create_remote_connecton(request,socket) {
         }
     }
     remote_socket = new net.Socket();
+
+    if(netType===tls){
+        var options={
+            isServer:false,
+            key: httpsOptions.key,
+            cert: httpsOptions.cert
+        }
+        remote_socket=new tls.TLSSocket(remote_socket, options);
+        remote_socket.isTLS=true;
+    }
     remote_socket.socket=socket;
+
     try{
         connectTo(remote_socket,hostname,port);
     }catch(e){
         log.error("remote connection fail:"+e);
-
     }
     remote_socket.url=url;
-    remote_socket.on("connect", function() {
-        log.debug("connect successful: " + hostname + ":" + port);
-    });
+    if(netType===tls){
+        remote_socket.on("secureConnection", function() {
+            log.debug("secure connect successful: " + hostname + ":" + port);
+        });
+        remote_socket.on("clientError", function(e) {
+            log.error("secure connection error: " + hostname + ":" + port+"  "+e);
+            clean_remote_socket(this);
+            clean_client_socket(this.socket);
+        });
+    }else{
+        remote_socket.on("connect", function() {
+            log.debug("connect successful: " + hostname + ":" + port);
+        });
+    }
 
     remote_socket.on("error", function(e) {
         log.error("connection error: " + hostname + ":" + port+"  "+e);
@@ -256,61 +300,75 @@ function process_server_cmd(cmd,socket){
 }
 
 
-var server=net.createServer(
-function(socket) {
-    //socket.on("connect", function() {
-    log.debug("local connection established: " + socket.remoteAddress);
-    //});
-    socket.on("end", function() {
-        log.debug("local connection closed: " + this.remoteAddress);
-        clean_client_socket(this);
-        //log.debug("client end " + this.remoteAddress);
-    });
-    socket.on("data", function(buf) {
-        log.debug("recievied local length:\n"+buf.length);
-        if(!this.bm){
-            var bm=this.bm=new BufferManager();
-        }else{
-            var bm=this.bm;
-        }
-        bm.add(buf);
 
-        var server_cmd=parse_server_cmd(bm);
-        if(server_cmd){
-            log.debug(server_cmd);
+function createServerCallbackFunc(netType){//netType is tls or net
+    return function(socket) {
+        //socket.on("connect", function() {
+        if(netType===tls){
+            socket.isTLS=true;
         }
-        if(server_cmd){
-            process_server_cmd(server_cmd,this);
-            return;
-        }
-        var request=local_request(bm);
-        if(request===null){
-            log.debug("not full request");
-            return;
-        }
+        log.debug("local connection established: " + socket.remoteAddress);
+        //});
+        socket.on("end", function() {
+            log.debug("local connection closed: " + this.remoteAddress);
+            clean_client_socket(this);
+            //log.debug("client end " + this.remoteAddress);
+        });
+        socket.on("data", function(buf) {
+            log.debug("recievied local length: "+buf.length);
+            if(!this.bm){
+                var bm=this.bm=new BufferManager();
+            }else{
+                var bm=this.bm;
+            }
+            bm.add(buf);
 
-        if(request){
-            log.info("recieve:"+request.getUrl().href);
-            if(matchAutoResponder(request,socket)===true){
+            var server_cmd=parse_server_cmd(bm);
+            if(server_cmd){
+                log.debug(server_cmd);
+            }
+            if(server_cmd){
+                process_server_cmd(server_cmd,this);
                 return;
             }
-        }
+            var request=local_request(bm,netType);
+            if(request===null){
+                log.debug("not full request");
+                return;
+            }
 
-        var remote_socket=this.remote_socket=create_remote_connecton(request,socket);
-    });
-    
-    socket.on("close", function() {
-        clean_client_socket(this);
-        log.debug("local connection closed: " + this.remoteAddress);
-    });
-    socket.on("error", function() {
-        clean_client_socket(this);
-        log.error("client error");
-    });
-});
+            if(request){
+                log.info("recieve:"+request.getUrl().href);
+                if(matchAutoResponder(request,socket)===true){
+                    return;
+                }
+            }
+
+            var remote_socket=this.remote_socket=create_remote_connecton(request,socket,netType);
+        });
+        
+        socket.on("close", function() {
+            clean_client_socket(this);
+            log.debug("local connection closed: " + this.remoteAddress);
+        });
+        socket.on("error", function() {
+            clean_client_socket(this);
+            log.error("client error");
+        });
+    }
+}
+
+
+var httpServer=net.createServer(
+    createServerCallbackFunc(net)
+);
+httpServer.maxConnections=config.max_connections;
+httpServer.listen(config.listen_port,config.listen_host);
 
 
 
-server.maxConnections=config.max_connections;
-server.listen(config.listen_port,config.listen_host);
-
+var httpsServer=tls.createServer(httpsOptions,
+    createServerCallbackFunc(tls)
+);
+httpsServer.maxConnections=config.max_connections;
+httpsServer.listen(config.listen_https_port,config.listen_host);
