@@ -99,7 +99,7 @@ function create_remote_connecton(request,socket,netType) {
     var hostname= url.hostname;
     if(request.getMethod()=='CONNECT'&&port=='443'){
         log.info("delegate https request to 127.0.0.1");
-        hostname='127.0.0.1';
+        hostname=config.listen_host;
         port=config.listen_https_port;
     }
     //console.log(url);
