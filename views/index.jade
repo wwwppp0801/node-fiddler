@@ -1,6 +1,9 @@
 doctype html
-html(lang="en")
+html(ng-app="fiddler")
   head
+    script(src="/socket.io/socket.io.js")
+    script(src="angular/angular.js")
+    script(src="js/controller.js")
     title= pageTitle
     style.
       * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -12,14 +15,10 @@ html(lang="en")
       #messages li { padding: 5px 10px; }
       #messages li:nth-child(odd) { background: #eee; }
 
-  body
-    h1 Jade - node template engine
-    ul#messages
-    script(src="/socket.io/socket.io.js")
-    script(src="/jquery/dist/jquery.js")
-    script.
-      var socket = io();
-      //socket.emit('aaa', "data");
-      socket.on("data",function(data){
-        $("<li/>").html(data.data).appendTo("#messages");
-      });
+  body(ng-controller="RequestListCtrl")
+    h1 Node-Fiddler
+    #nav
+      input(type="button" ng-click="clear()" value="clear")
+    ul#requests
+      li(ng-repeat="req in requests" class="request")
+         .url url:{{req.url}}
