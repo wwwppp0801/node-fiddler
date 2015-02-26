@@ -2,6 +2,7 @@
     'listen_host':'127.0.0.1',
     'listen_port':'8083',
     'listen_https_port':'8084',
+    'listen_config_port':'8085',
     'max_connections':1000,
     'hosts':[
 //        ['www.baidu.com','127.0.0.1'],

@@ -10,6 +10,7 @@ var optparser = require("./optparser");
 var BufferManager=require('./buffermanager').BufferManager;
 var local_request=require('./request').local_request;
 var remote_response=require('./response').remote_response;
+var dataLogger=require('./front').dataLogger;
 var config=require("./config");
 var matchAutoResponder=require("./auto_responder").matchAutoResponder;
 
@@ -312,6 +313,8 @@ function createServerCallbackFunc(netType){//netType is tls or net
         if(netType===tls){
             socket.isTLS=true;
         }
+
+
         log.debug("local connection established: " + socket.remoteAddress);
         //});
         socket.on("end", function() {
@@ -337,6 +340,8 @@ function createServerCallbackFunc(netType){//netType is tls or net
                 return;
             }
             var request=local_request(bm,netType);
+
+
             if(request===null){
                 log.debug("not full request");
                 return;
@@ -344,6 +349,7 @@ function createServerCallbackFunc(netType){//netType is tls or net
 
             if(request){
                 log.info("recieve:"+request.getUrl().href);
+                dataLogger.data(request,"url",request.getUrl().href);
                 if(matchAutoResponder(request,socket)===true){
                     return;
                 }
@@ -392,3 +398,6 @@ var httpsServer=tls.createServer(httpsOptions,
 );
 httpsServer.maxConnections=config.max_connections;
 httpsServer.listen(config.listen_https_port,config.listen_host);
+
+
+///////////http config server/////////////////////
