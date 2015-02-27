@@ -20,6 +20,9 @@ exports.remote_response=function remote_response(bm){
     var code=parseInt(tmp[1],10);
     var version=tmp[0]=='HTTP/1.0'?"1.0":"1.1";
     return {
+        getRawHeader:function(){
+            return raw_header;
+        },
         getResponseCode:function(){
             return code;
         },
@@ -48,6 +51,9 @@ exports.remote_response=function remote_response(bm){
                 }
             };
         })(),
+        getBody:function(){
+            return bm.toBuffer();
+        },
         isKeepAlive:function(){
             var Connection=this.getHeader("Connection");
             if(Connection=="keep-alive"){
@@ -79,7 +85,7 @@ exports.remote_response=function remote_response(bm){
                 }
                 if(len==0&&bm.indexOf(CRLF,start)){
                     log.debug("chunk over");
-                    bm.clear();
+                    //bm.clear();
                     return true;
                 }
                 return false;
@@ -89,7 +95,7 @@ exports.remote_response=function remote_response(bm){
             if(typeof(content_length)!='undefined'){
                 log.debug("content length:"+ content_length+"\t"+bm.size());
                 if(content_length<=bm.size()){
-                    bm.clear();
+                    //bm.clear();
                     return true;
                 }
             }

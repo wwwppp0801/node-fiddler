@@ -6,6 +6,7 @@ var config=require("./config");
 var log = require("./log").instance;
 var CRLF = "\r\n";
 var URL=require("url");
+var dataLogger=require('./front').dataLogger;
 
 
 function format(string,args){
@@ -45,6 +46,7 @@ function matchAutoResponder(request,socket){
     }
 
     if(filename){
+        dataLogger.data(request,"matchAutoResponder",filename);
         var file=processFilename(filename,matched);
 
         return strategy[file.schema](file,socket,request,rule[2]);
@@ -75,10 +77,13 @@ var strategy={
                 'Content-Length: '+stat.size].join(CRLF)+CRLF+CRLF);
         if(typeof callback=='function'){
             var content=fs.readFileSync(filename, {encoding:'utf-8'});
-            socket.write(callback(content));
+            content=callback(content);
+            dataLogger.data(request,"response",content);
+            socket.write(content);
         }else{
             fs.readFile(file.name,function(err,data){
                 if (err) throw err;
+                dataLogger.data(request,"response",data);
                 socket.write(data);
             });
         }
@@ -130,6 +135,7 @@ var strategy={
                         'Content-Type: '+res.headers['content-type'],//get_content_type(file.name),
                         'Cache-Control: private',
                         'Content-Length: '+data.length].join(CRLF)+CRLF+CRLF);
+                dataLogger.data(request,"response",data);
                 socket.write(data);
             });
             res.on("close",function(){

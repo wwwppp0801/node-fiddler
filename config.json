@@ -4,6 +4,11 @@
     'listen_https_port':'8084',
     'listen_config_port':'8085',
     'max_connections':1000,
+    //只有在这个数组里的域名，https下才会被解码，其它https流量直接被透传
+    'delegate_https_hosts':[
+        //'www.baidu.com',
+        'ss1.bdstatic.com',
+    ],
     'hosts':[
 //        ['www.baidu.com','127.0.0.1'],
     ],

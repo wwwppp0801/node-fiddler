@@ -1,3 +1,4 @@
+
 angular.module("fiddler",[]).factory('socket', function ($rootScope) {
     var socket = io();
     return {
@@ -20,7 +21,13 @@ angular.module("fiddler",[]).factory('socket', function ($rootScope) {
             })
         }
     };
-}).controller("RequestListCtrl",function ($scope,socket) {
+})
+.controller("MainMenu",['$scope',function($scope){
+    $scope.setTab=function(view){
+        $scope.view=view;
+    }
+}])
+.controller("RequestListCtrl",["$scope","socket",function ($scope,socket) {
     //socket.emit('aaa', "data");
     socket.on("data",function(data){
         mergeData(data);
@@ -30,19 +37,33 @@ angular.module("fiddler",[]).factory('socket', function ($rootScope) {
     $scope.clear=function(){
         $scope.requests=[]; 
     };
+    $scope.setActive=function(id){
+        $scope.requests.forEach(function(request){
+            if(request.id==id){
+                request.active=true;
+                $scope.activeRequest=request;
+            }else{
+                delete request.active;
+            }
+        });
+    };
+
+    $scope.setDetailView=function(detailView){
+        $scope.detailView=detailView;
+    };
 
     function mergeData(data){
-        var list=$scope.requests;
+        var list=$scope.requests,flag=false;
         list.forEach(function(request){
             if(request.id==data.id){
                 request[data.type]=data.data;
-                data=null;
+                flag=true;
             }
         });
-        if(data){
+        if(!flag){
             var request={id:data.id};
             request[data.type]=data.data;
             list.push(request);
         }
     }
-});
+}]);

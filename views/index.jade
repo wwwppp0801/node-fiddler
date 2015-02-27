@@ -2,23 +2,51 @@ doctype html
 html(ng-app="fiddler")
   head
     script(src="/socket.io/socket.io.js")
-    script(src="angular/angular.js")
-    script(src="js/controller.js")
-    title= pageTitle
+    script(src="/jquery/dist/jquery.js")
+    script(src="/angular/angular.js")
+    script(src="/js/controller.js")
+    //script(src="/bootstrap/dist/js/bootstrap.js")
+    link(rel="stylesheet" href="/bootstrap/dist/css/bootstrap.css")
+    title Fiddler
     style.
-      * { margin: 0; padding: 0; box-sizing: border-box; }
-      body { font: 13px Helvetica, Arial; }
-      form { background: #000; padding: 3px; position: fixed; bottom: 0; width: 100%; }
-      form input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
-      form button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
-      #messages { list-style-type: none; margin: 0; padding: 0; }
-      #messages li { padding: 5px 10px; }
-      #messages li:nth-child(odd) { background: #eee; }
+      #requests{overflow:auto;}
 
-  body(ng-controller="RequestListCtrl")
-    h1 Node-Fiddler
-    #nav
-      input(type="button" ng-click="clear()" value="clear")
-    ul#requests
-      li(ng-repeat="req in requests" class="request")
-         .url url:{{req.url}}
+  body
+    ul.nav.nav-tabs(ng-controller="MainMenu" ng-init='view=1')
+      li(ng-click="setTab(1)" ng-class='{active:view==1}')
+        a Request List
+      li(ng-click="setTab(2)" ng-class='{active:view==2}')
+        a Config
+    #RequestListCtrl.container-fluid(ng-controller="RequestListCtrl")
+      .row
+        div.col-md-7
+          div
+            input.btn.btn-primary(type="button" ng-click="clear()" value="clear")
+          div#requests.list-group
+            a.list-group-item(href="#c=RequestListCtrl&id={{req.id}}" ng-click="setActive(req.id)" ng-repeat="req in requests" ng-class="{'active':req.active,'list-group-item-success': req.matchAutoResponder}").
+              {{req.url}}
+        div.col-md-5#activeRequest
+          ul.nav.nav-tabs(ng-init='detailView="request_header"')
+            li(ng-click="setDetailView('request_header')" ng-class="{'active':detailView=='request_header'}")
+              a Request Header
+            li(ng-click="setDetailView('response_header')" ng-class="{'active':detailView=='response_header'}")
+              a Response Header
+            li(ng-click="setDetailView('response')" ng-class="{'active':detailView=='response'}")
+              a Response
+            li(ng-click="setDetailView('auto_responder')" ng-class="{'active':detailView=='auto_responder'}")
+              a AutoResponder
+          #activeRequestContainer(ng-init='activeRequest={}')
+            .header(ng-class="{hide:detailView!='request_header'}")
+              pre {{activeRequest.requestHeader}}
+            .header(ng-class="{hide:detailView!='response_header'}")
+              pre {{activeRequest.responseHeader}}
+            .response(ng-class="{hide:detailView!='response'}")
+              pre {{activeRequest.response}}
+            .auto_responder(ng-class="{hide:detailView!='auto_responder'}")
+
+    script.
+      $(window).resize(function(){
+        $("#requests").height($(window).height()-$("#requests").offset().top);
+        $("#activeRequestContainer").height($(window).height()-$("#activeRequestContainer").offset().top);
+      });
+      $(window).resize();

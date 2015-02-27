@@ -98,7 +98,7 @@ function create_remote_connecton(request,socket,netType) {
         port=url.port;
     }
     var hostname= url.hostname;
-    if(request.getMethod()=='CONNECT'&&port=='443'){
+    if(request.getMethod()=='CONNECT'&&port=='443'&&config.delegate_https_hosts.indexOf(hostname)!=-1){
         log.info("delegate https request to 127.0.0.1");
         hostname=config.listen_host;
         port=config.listen_https_port;
@@ -111,7 +111,7 @@ function create_remote_connecton(request,socket,netType) {
         try{
             //var request_raw=request.getSendHeader()+request.getBody();
             // 这个是错的，string 和 buffer相加，如果发送2进制数据就会出错！
-            log.debug("remote connection established");
+            log.debug("restore remote connection from pool");
             //log.info("send:\n"+request_raw);
             //remote_socket.write(request_raw);
             remote_socket.write(request.getSendHeader());
@@ -187,13 +187,19 @@ function create_remote_connecton(request,socket,netType) {
             response=false;
             return;
         }
+
         if(response 
-            && response.isKeepAlive()
             && response.responseIsEnd(bm) 
             ){
+            dataLogger.data(request,"responseHeader",response.getRawHeader());
+            dataLogger.data(request,"response",response.getBody().toString());
             log.debug("response end:"+response.getResponseCode());
-            release_connection(this);
+
+            if(response.isKeepAlive()){
+                release_connection(this);
+            }
             response=false;
+            bm.clear();
             delete this.bm;
         }
     });
@@ -349,7 +355,11 @@ function createServerCallbackFunc(netType){//netType is tls or net
 
             if(request){
                 log.info("recieve:"+request.getUrl().href);
-                dataLogger.data(request,"url",request.getUrl().href);
+                if(request.getMethod()!="CONNECT"){
+                    //透传的请求就不用往下走了
+                    dataLogger.data(request,"url",request.getUrl().href);
+                    dataLogger.data(request,"requestHeader",request.getSendHeader());
+                }
                 if(matchAutoResponder(request,socket)===true){
                     return;
                 }
