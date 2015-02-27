@@ -116,7 +116,7 @@ function create_remote_connecton(request,socket,netType) {
             //remote_socket.write(request_raw);
             remote_socket.write(request.getSendHeader());
             remote_socket.write(request.getBody());
-            log.debug("write to cached connection:"+hostname+":port");
+            log.info("write to cached connection:"+hostname+":port");
             return remote_socket;
         }catch(e){
             clean_remote_socket(remote_socket);
@@ -164,18 +164,18 @@ function create_remote_connecton(request,socket,netType) {
     });
     var response;
     remote_socket.on('data',function(buf){
-        log.debug("recv remote data length:"+buf.length);
+        log.info("recv remote data length:"+buf.length+":"+request.getUrl().href);
         if(!this.bm){
             this.bm=new BufferManager();
         }
         var bm=this.bm;
         try{
             this.socket.write(buf);
-            bm.add(buf);
         }catch(e){
             this.destroy();
             this.socket.destroy();
         }
+        bm.add(buf);
         if(!response){
             response=remote_response(bm);
         }
@@ -183,7 +183,7 @@ function create_remote_connecton(request,socket,netType) {
             && response.getResponseCode()<200//100－199都是报状态的，响应还没结束
             && response.getResponseCode()>=100
             ){
-            log.debug("recv 1xx response:"+response.getResponseCode());
+            log.info("recv 1xx response:"+response.getResponseCode());
             response=false;
             return;
         }
@@ -193,7 +193,7 @@ function create_remote_connecton(request,socket,netType) {
             ){
             dataLogger.data(request,"responseHeader",response.getRawHeader());
             dataLogger.data(request,"response",response.getBody().toString());
-            log.debug("response end:"+response.getResponseCode());
+            log.info("response end:"+response.getResponseCode()+":"+request.getUrl().href);
 
             if(response.isKeepAlive()){
                 release_connection(this);

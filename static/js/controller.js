@@ -37,9 +37,9 @@ angular.module("fiddler",[]).factory('socket', function ($rootScope) {
     $scope.clear=function(){
         $scope.requests=[]; 
     };
-    $scope.setActive=function(id){
+    $scope.setActive=function(_request){
         $scope.requests.forEach(function(request){
-            if(request.id==id){
+            if(request===_request){
                 request.active=true;
                 $scope.activeRequest=request;
             }else{
@@ -47,20 +47,47 @@ angular.module("fiddler",[]).factory('socket', function ($rootScope) {
             }
         });
     };
+    $(window).on("keydown",function(e){
+        $scope.$apply(function (){
+            var request=$scope.activeRequest;
+            var index=$scope.requests.indexOf(request);
+            if(index==-1){
+                $scope.setActive($scope.requests[0]);
+                return;
+            }
+            if(e.keyCode == 40 && index<$scope.requests.length-1){
+                e.preventDefault();
+                $scope.setActive($scope.requests[index+1]);
+                var elem=$("#"+request.id).get(0);
+                if(elem){
+                    elem.scrollIntoView();
+                }
+            }
+            if(e.keyCode == 38 && index>0){
+                e.preventDefault();
+                $scope.setActive($scope.requests[index-1]);
+                var elem=$("#"+request.id).get(0);
+                if(elem){
+                    elem.scrollIntoView();
+                }
+            }
+        });
+    });
 
     $scope.setDetailView=function(detailView){
         $scope.detailView=detailView;
     };
 
     function mergeData(data){
-        var list=$scope.requests,flag=false;
-        list.forEach(function(request){
+        var list=$scope.requests,flag;
+        flag=list.every(function(request){
             if(request.id==data.id){
                 request[data.type]=data.data;
-                flag=true;
+                return false;
             }
+            return true;
         });
-        if(!flag){
+        if(flag){
             var request={id:data.id};
             request[data.type]=data.data;
             list.push(request);
