@@ -108,22 +108,14 @@ function create_remote_connecton(request,socket,netType) {
     //socket = net.createConnection(port, hostname);
     if(remote_socket=get_cached_remote_connection(url)){
         remote_socket.socket=socket;
-        try{
-            //var request_raw=request.getSendHeader()+request.getBody();
-            // 这个是错的，string 和 buffer相加，如果发送2进制数据就会出错！
-            log.debug("restore remote connection from pool");
-            //log.info("send:\n"+request_raw);
-            //remote_socket.write(request_raw);
-            remote_socket.write(request.getSendHeader());
-            remote_socket.write(request.getBody());
-            log.info("write to cached connection:"+hostname+":port");
-            return remote_socket;
-        }catch(e){
-            clean_remote_socket(remote_socket);
-            log.error("can't write to cached connection");
-        }
+        remote_socket.request=request;
+        log.debug("restore remote connection from pool");
+        remote_socket_on_connect.apply(remote_socket);
+        log.info("write to cached connection:"+remote_socket.request.getUrl().href);
+        return remote_socket;
     }
     remote_socket = new net.Socket();
+    remote_socket.request=request;
 
     if(netType===tls){
         var options={
@@ -164,7 +156,7 @@ function create_remote_connecton(request,socket,netType) {
     });
     var response;
     remote_socket.on('data',function(buf){
-        log.info("recv remote data length:"+buf.length+":"+request.getUrl().href);
+        log.info("recv remote data length:"+buf.length+":"+this.request.getUrl().href);
         if(!this.bm){
             this.bm=new BufferManager();
         }
@@ -179,6 +171,7 @@ function create_remote_connecton(request,socket,netType) {
         if(!response){
             response=remote_response(bm);
         }
+        dataLogger.data(this.request,"responseCode",response.getResponseCode());
         if(response 
             && response.getResponseCode()<200//100－199都是报状态的，响应还没结束
             && response.getResponseCode()>=100
@@ -191,9 +184,9 @@ function create_remote_connecton(request,socket,netType) {
         if(response 
             && response.responseIsEnd(bm) 
             ){
-            dataLogger.data(request,"responseHeader",response.getRawHeader());
-            dataLogger.data(request,"response",response.getBody().toString());
-            log.info("response end:"+response.getResponseCode()+":"+request.getUrl().href);
+            dataLogger.data(this.request,"responseHeader",response.getRawHeader());
+            dataLogger.data(this.request,"response",response.getBody().toString());
+            log.info("response end:"+response.getResponseCode()+":"+this.request.getUrl().href);
 
             if(response.isKeepAlive()){
                 release_connection(this);
@@ -211,20 +204,20 @@ function create_remote_connecton(request,socket,netType) {
         clean_remote_socket(this);
         clean_client_socket(this.socket);
     });
-    remote_socket.on("connect",function remote_socket_on_connect(){
-        this.is_connected=true;
+    remote_socket.once("connect",remote_socket_on_connect);
+    function remote_socket_on_connect(){
         try{
-            this.removeListener("connect",remote_socket_on_connect);
-            //var request_raw=request.getSendHeader()+request.getBody();
             log.debug("remote connection established");
-            log.debug("send:\n"+request.getSendHeader());
-            this.write(request.getSendHeader());
-            this.write(request.getBody());
+            log.debug("send:\n"+this.request.getSendHeader());
+            this.write(this.request.getSendHeader());
+            this.write(this.request.getBody());
         }catch(e){
+            clean_remote_socket(remote_socket);
+            log.error("can't write to cached connection");
             log.error(e);
             throw e;
         }
-    });
+    }
     return remote_socket;
 }
 
@@ -370,6 +363,7 @@ function createServerCallbackFunc(netType){//netType is tls or net
             if(request&&request.getMethod()=='CONNECT'){
                 remote_socket.removeAllListeners("connect");
                 remote_socket.removeAllListeners("data");
+                log.info("http connect, create http channel");
                 remote_socket.on("connect",function(){
                     socket.removeAllListeners("data");
                     socket.write('HTTP/1.1 200 Connection Established\r\n' +
