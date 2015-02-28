@@ -171,7 +171,9 @@ function create_remote_connecton(request,socket,netType) {
         if(!response){
             response=remote_response(bm);
         }
-        dataLogger.data(this.request,"responseCode",response.getResponseCode());
+        if(response){
+            dataLogger.data(this.request,"responseCode",response.getResponseCode());
+        }
         if(response 
             && response.getResponseCode()<200//100－199都是报状态的，响应还没结束
             && response.getResponseCode()>=100
