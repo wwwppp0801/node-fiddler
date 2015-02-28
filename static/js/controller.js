@@ -1,5 +1,5 @@
 
-angular.module("fiddler",[]).factory('socket', function ($rootScope) {
+angular.module("fiddler",[]).factory('socket', ["$rootScope",function ($rootScope) {
     var socket = io();
     return {
         on: function (eventName, callback) {
@@ -21,11 +21,73 @@ angular.module("fiddler",[]).factory('socket', function ($rootScope) {
             })
         }
     };
-})
+}])
 .controller("MainMenu",['$scope',function($scope){
-    $scope.setTab=function(view){
-        $scope.view=view;
+    $scope.setTab=function(tab){
+        $scope.curTab=tab;
+        $scope.tabs.forEach(function(tab){
+            if($scope.curTab==tab){
+                $("#"+tab+"Ctrl").show();
+            }else{
+                $("#"+tab+"Ctrl").hide();
+            }
+        });
+        $(window).resize();
     }
+}])
+.controller("ConfigCtrl",['$scope','$http',function($scope,$http){
+    $scope.loadTempFiles=function(){
+        $http.get('/tmpfilelist').success(function(data, status, headers, config) {
+            $scope.tempFiles=data;
+        });
+    };
+    $scope.deletefile=function(file){
+        $http.get('/upload/delete/'+encodeURIComponent(file)).success(function(data, status, headers, config) {
+            $scope.loadTempFiles();
+        });
+    };
+
+    $(".simple_file").find("iframe").each(function(i,e){
+        var iframe=$(this);
+        iframe.load(function(){
+            iframe.contents().find("form").submit(function(e){
+                e.stopPropagation();
+                e.preventDefault();
+                $(this).ajaxSubmit({
+                    dataType:"json",
+                    success:function(data){
+                        $scope.$apply(function(data){
+                            $scope.loadTempFiles();
+                        });
+                    }
+                });
+                return false;
+            });
+        });
+        iframe.attr("src","/simple_json_files_upload.html?"+Math.random());
+    });
+    $scope.loadConfig=function(){
+        $http.get('/config').success(function(data, status, headers, config) {
+            $scope.rules=data.auto_responder;
+        });
+    };
+    $scope.deleterule=function(file){
+        $http.get('/deleterule/'+encodeURIComponent(file)).success(function(data, status, headers, config) {
+            $scope.rules=data.rules;
+        });
+    };
+    $("#formAddRule").submit(function(){
+        $(this).ajaxSubmit({
+            dataType:"json",
+            success:function(data){
+                $scope.$apply(function(data){
+                    //$scope.message="规则添加成功";
+                    $scope.loadConfig();
+                });
+            }
+        });
+        return false;
+    });
 }])
 .controller("RequestListCtrl",["$scope","socket",function ($scope,socket) {
     //socket.emit('aaa', "data");

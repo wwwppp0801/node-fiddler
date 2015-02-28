@@ -99,6 +99,9 @@ exports.remote_response=function remote_response(bm){
                     return true;
                 }
             }
+            if(raw_header&&!content_length&&!this.getHeader("Transfer-Encoding")){
+                return true;
+            }
             return false;
         }
     };

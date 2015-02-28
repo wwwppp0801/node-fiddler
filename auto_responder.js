@@ -70,10 +70,13 @@ var strategy={
             log.error("file:'"+file.name+"' is not file");
             return;
         }
-        socket.write(['HTTP/1.1 200 OK',
+        var responseHeader=['HTTP/1.1 200 OK',
                 'Content-Type: '+get_content_type(file.name),
                 'Cache-Control: private',
-                'Content-Length: '+stat.size].join(CRLF)+CRLF+CRLF);
+                'Content-Length: '+stat.size].join(CRLF)+CRLF+CRLF;
+        socket.write(responseHeader);
+        dataLogger.data(request,"responseHeader",responseHeader);
+
         if(typeof callback=='function'){
             var content=fs.readFileSync(filename, {encoding:'utf-8'});
             content=callback(content);
@@ -134,6 +137,7 @@ var strategy={
                         'Content-Type: '+res.headers['content-type'],//get_content_type(file.name),
                         'Cache-Control: private',
                         'Content-Length: '+data.length].join(CRLF)+CRLF+CRLF);
+                dataLogger.data(request,"responseHeader",JSON.stringify(res.headers));
                 dataLogger.data(request,"response",data);
                 socket.write(data);
             });
