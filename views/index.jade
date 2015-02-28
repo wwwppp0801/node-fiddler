@@ -16,7 +16,7 @@ html(ng-app="fiddler")
     .navbar-fixed-top.navbar.navbar-default(ng-controller="MainMenu")
       .container
         ul.nav.nav-tabs(ng-init='tabs=["RequestList","Config"];curTab=tabs[0];setTab(curTab)')
-          li(ng-repeat="tab in tabs" ng-click="setTab(tab)" ng-class='{active:view==tab}')
+          li(ng-repeat="tab in tabs" ng-click="setTab(tab)" ng-class='{active:curTab==tab}')
             a {{tab}}
     .navbar aaa
     #ConfigCtrl.container-fluid(ng-controller="ConfigCtrl")
@@ -92,6 +92,7 @@ html(ng-app="fiddler")
               a AutoResponder
           #activeRequestContainer(ng-init='activeRequest={}')
             .header(ng-class="{hide:detailView!='request_header'}")
+              h7 {{activeRequest.url}}
               pre {{activeRequest.requestHeader}}
             .header(ng-class="{hide:detailView!='response_header'}")
               pre {{activeRequest.responseHeader}}
