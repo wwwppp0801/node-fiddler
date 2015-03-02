@@ -96,8 +96,10 @@ angular.module("fiddler",[]).factory('socket', ["$rootScope",function ($rootScop
         //$("<li/>").html(data.data).appendTo("#messages");
     });
     $scope.requests=[]; 
+    $scope.activeRequest={};
     $scope.clear=function(){
         $scope.requests=[]; 
+        $scope.activeRequest={};
     };
     $scope.setActive=function(_request){
         $scope.requests.forEach(function(request){
