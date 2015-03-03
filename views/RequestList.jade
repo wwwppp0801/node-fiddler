@@ -1,0 +1,27 @@
+#RequestListCtrl.container-fluid(ng-controller="RequestListCtrl" ng-init="init()")
+  .row
+    .col-md-7
+      div
+        input.btn.btn-primary(type="button" ng-click="clear()" value="clear")
+      div#requests.list-group
+        a.list-group-item(id="{{req.id}}" href="javascript:;" ng-click="setActive(req)" ng-repeat="req in requests" ng-class="{'active':req.active,'list-group-item-warning':!req.responseHeader,'list-group-item-success': req.matchAutoResponder,'list-group-item-danger':req.responseCode>=400}").
+          {{req.url}}
+    .col-md-5#activeRequest
+      ul.nav.nav-tabs(ng-init='detailView="request_header"')
+        li(ng-click="setDetailView('request_header')" ng-class="{'active':detailView=='request_header'}")
+          a Request Header
+        li(ng-click="setDetailView('response_header')" ng-class="{'active':detailView=='response_header'}")
+          a Response Header
+        li(ng-click="setDetailView('response')" ng-class="{'active':detailView=='response'}")
+          a Response
+        li(ng-click="setDetailView('auto_responder')" ng-class="{'active':detailView=='auto_responder'}")
+          a AutoResponder
+      #activeRequestContainer(ng-init='activeRequest={}')
+        .header(ng-class="{hide:detailView!='request_header'}")
+          h7 {{activeRequest.url}}
+          pre {{activeRequest.requestHeader}}
+        .header(ng-class="{hide:detailView!='response_header'}")
+          pre {{activeRequest.responseHeader}}
+        .response(ng-class="{hide:detailView!='response'}")
+          pre {{activeRequest.response}}
+        .auto_responder(ng-class="{hide:detailView!='auto_responder'}")
