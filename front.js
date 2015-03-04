@@ -44,6 +44,10 @@ var sockets=[];
         //res.send('hello world');
         res.render('index.jade');
     });
+    app.get('/template/:template', function(req, res){
+        //res.send('hello world');
+        res.render(req.params.template+'.jade');
+    });
     app.get('/config',function(req,res){
         res.send(JSON.stringify(config));
     });

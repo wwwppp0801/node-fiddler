@@ -1,5 +1,22 @@
 
-angular.module("fiddler",[]).factory('socket', ["$rootScope",function ($rootScope) {
+angular.module("fiddler",['ngRoute'])
+.config(['$routeProvider',
+    function($routeProvider) {
+        $routeProvider.
+            when('/RequestListCtrl', {
+                templateUrl: 'template/RequestList',
+                controller: 'RequestListCtrl'
+            }).
+            when('/ConfigCtrl', {
+                templateUrl: 'template/Config',
+                controller: 'ConfigCtrl'
+            }).
+            otherwise({
+                redirectTo: '/RequestListCtrl'
+            });
+    }
+])
+.factory('socket', ["$rootScope",function ($rootScope) {
     var socket = io();
     return {
         on: function (eventName, callback) {
@@ -22,17 +39,12 @@ angular.module("fiddler",[]).factory('socket', ["$rootScope",function ($rootScop
         }
     };
 }])
-.controller("MainMenu",['$scope',function($scope){
+.controller("MainMenu",['$scope','$location',function($scope,$location){
+    $scope.init=function(){
+        $scope.setTab($location.path().replace(/^[#\/]*/,"").replace(/Ctrl$/,""));
+    };
     $scope.setTab=function(tab){
         $scope.curTab=tab;
-        $scope.tabs.forEach(function(tab){
-            if($scope.curTab==tab){
-                $("#"+tab+"Ctrl").show();
-            }else{
-                $("#"+tab+"Ctrl").hide();
-            }
-        });
-        $(window).resize();
     }
 }])
 .controller("ConfigCtrl",['$scope','$http',function($scope,$http){
@@ -91,6 +103,12 @@ angular.module("fiddler",[]).factory('socket', ["$rootScope",function ($rootScop
 }])
 .controller("RequestListCtrl",["$scope","socket",function ($scope,socket) {
     //socket.emit('aaa', "data");
+    $scope.init=function(){
+      $(window).resize(function (){
+        $("#requests").height($(window).height()-$("#requests").offset().top-30);
+        $("#activeRequestContainer").height($(window).height()-$("#activeRequestContainer").offset().top-30);
+      });
+    };
     socket.on("data",function(data){
         mergeData(data);
         //$("<li/>").html(data.data).appendTo("#messages");
@@ -111,6 +129,9 @@ angular.module("fiddler",[]).factory('socket', ["$rootScope",function ($rootScop
             }
         });
     };
+    $scope.$on("$viewContentLoaded",function(){
+      $(window).resize();
+    });
     $(window).on("keydown",function(e){
         $scope.$apply(function (){
             var request=$scope.activeRequest;

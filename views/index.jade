@@ -4,105 +4,20 @@ html(ng-app="fiddler")
     script(src="/socket.io/socket.io.js")
     script(src="/jquery/dist/jquery.js")
     script(src="/angular/angular.js")
+    script(src="/angular-route/angular-route.js")
     script(src="/jquery-form/jquery.form.js")
     script(src="/js/controller.js")
     //script(src="/bootstrap/dist/js/bootstrap.js")
     link(rel="stylesheet" href="/bootstrap/dist/css/bootstrap.css")
     title Fiddler
     style.
-      #requests,#activeRequestContainer{overflow:auto;}
+      #requests,#activeRequestContainer{overflow:auto;overflow-y: auto; overflow-x: hidden; }
 
   body
-    .navbar-fixed-top.navbar.navbar-default(ng-controller="MainMenu")
+    .navbar-fixed-top.navbar.navbar-default(ng-controller="MainMenu" ng-init="init()")
       .container
-        ul.nav.nav-tabs(ng-init='tabs=["RequestList","Config"];curTab=tabs[0];setTab(curTab)')
+        ul.nav.nav-tabs(ng-init='tabs=["RequestList","Config"]')
           li(ng-repeat="tab in tabs" ng-click="setTab(tab)" ng-class='{active:curTab==tab}')
-            a {{tab}}
+            a(href="#{{tab}}Ctrl") {{tab}}
     .navbar aaa
-    #ConfigCtrl.container-fluid(ng-controller="ConfigCtrl")
-      .row
-        .col-md-8
-          ul.list-group(ng-init="loadConfig()")
-            li.list-group-item.clearfix( href="#c=RequestListCtrl&id={{req.id}}" ng-repeat="rule in rules")
-              .pull-left.
-                {{rule[0]}} =&gt; <br> {{rule[1]}}
-              .pull-right
-                a.btn.btn-default(href="javascript:;" ng-click="deleterule(rule[0])") 删除
-
-          form#formAddRule.form-horizontal(action="/config/autoResponder/add" method="post")
-            .form-group
-              .col-sm-offset-2.col-sm-10
-                label.radio-inline
-                  input(type="radio" checked="checked" name="keyType" value="String")
-                  |String
-                label.radio-inline
-                  input(type="radio" name="keyType" value="RegExp")
-                  |Regular Expression
-            .form-group
-              label.col-sm-2.control-label(for="configKey") Url
-              .col-sm-10
-                input#configKey.form-control(name="key")
-            .form-group
-              .col-sm-offset-2.col-sm-10
-                label.radio-inline
-                  input(type="radio" checked="checked" name="valueType" value="String") 
-                  |String
-                label.radio-inline
-                  input(type="radio" name="valueType" value="Url")
-                  |Url
-                label.radio-inline
-                  input(type="radio" name="valueType" value="File")
-                  |File
-            .form-group
-              label.col-sm-2.control-label(for="configValue") Replaced By
-              .col-sm-10
-                input#configValue.form-control(name="value")
-            .form-group
-              .col-sm-offset-2.col-sm-10
-                input.btn.btn-primary(type="submit" ng-click="loadTempFiles()" value="提交")
-
-        .col-md-4(ng-init="loadTempFiles()")
-          ul.list-group
-            li.clearfix.list-group-item(ng-repeat="file in tempFiles")
-              .pull-left tmp/{{file}}
-              .pull-right
-                a.btn.btn-default(href="javascript:;" ng-click="deletefile(file)") 删除
-          .simple_file
-            iframe(height="40" scrolling="yes" frameborder="0")
-          div
-            input.btn.btn-primary(type="button" ng-click="loadTempFiles()" value="刷新")
-
-    #RequestListCtrl.container-fluid(ng-controller="RequestListCtrl")
-      .row
-        .col-md-7
-          div
-            input.btn.btn-primary(type="button" ng-click="clear()" value="clear")
-          div#requests.list-group
-            a.list-group-item(id="{{req.id}}" href="#c=RequestListCtrl&id={{req.id}}" ng-click="setActive(req)" ng-repeat="req in requests" ng-class="{'active':req.active,'list-group-item-warning':!req.responseHeader,'list-group-item-success': req.matchAutoResponder,'list-group-item-danger':req.responseCode>=400}").
-              {{req.url}}
-        .col-md-5#activeRequest
-          ul.nav.nav-tabs(ng-init='detailView="request_header"')
-            li(ng-click="setDetailView('request_header')" ng-class="{'active':detailView=='request_header'}")
-              a Request Header
-            li(ng-click="setDetailView('response_header')" ng-class="{'active':detailView=='response_header'}")
-              a Response Header
-            li(ng-click="setDetailView('response')" ng-class="{'active':detailView=='response'}")
-              a Response
-            li(ng-click="setDetailView('auto_responder')" ng-class="{'active':detailView=='auto_responder'}")
-              a AutoResponder
-          #activeRequestContainer(ng-init='activeRequest={}')
-            .header(ng-class="{hide:detailView!='request_header'}")
-              h7 {{activeRequest.url}}
-              pre {{activeRequest.requestHeader}}
-            .header(ng-class="{hide:detailView!='response_header'}")
-              pre {{activeRequest.responseHeader}}
-            .response(ng-class="{hide:detailView!='response'}")
-              pre {{activeRequest.response}}
-            .auto_responder(ng-class="{hide:detailView!='auto_responder'}")
-
-    script.
-      $(window).resize(function (){
-        $("#requests").height($(window).height()-$("#requests").offset().top-30);
-        $("#activeRequestContainer").height($(window).height()-$("#activeRequestContainer").offset().top-30);
-      });
-      $(window).resize();
+    ng-view
