@@ -1,0 +1,42 @@
+#ConfigCtrl.container-fluid(ng-controller="OtherConfigCtrl" ng-init="loadConfig()")
+  .row
+    .col-md-6
+      h5 hosts配置
+      ul.list-group
+        li.list-group-item.clearfix(ng-repeat="host in hosts")
+          .pull-left.
+            {{host[0]}} =&gt; <br> {{host[1]}}
+          .pull-right
+            a.btn.btn-default(href="javascript:;" ng-click="deleteHost(host[0])") 删除
+
+      form.form-horizontal(ng-submit="submitAddHost($event)")
+        .form-group
+          label.col-sm-2.control-label Host
+          .col-sm-10
+            input.form-control(name="host")
+        .form-group
+          label.col-sm-2.control-label Ip
+          .col-sm-10
+            input.form-control(name="ip")
+        .form-group
+          .col-sm-offset-2.col-sm-10
+            input.btn.btn-primary(type="submit" value="提交")
+    .col-md-6
+      h5 https域名拦截配置配置
+        small 只有这些域名的https请求会被拦截，走autoresponder
+      ul.list-group
+        li.list-group-item.clearfix(ng-repeat="host in delegate_https_hosts")
+          .pull-left.
+            {{host}}
+          .pull-right
+            a.btn.btn-default(href="javascript:;" ng-click="deleteHttpsHost(host)") 删除
+
+      form.form-horizontal(ng-submit="submitAddHttpsHost($event)")
+        .form-group
+          label.col-sm-2.control-label Host
+          .col-sm-10
+            input.form-control(name="host")
+        .form-group
+          .col-sm-offset-2.col-sm-10
+            input.btn.btn-primary(type="submit" value="提交")
+

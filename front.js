@@ -90,6 +90,47 @@ var sockets=[];
         res.send(JSON.stringify(files));
     });
 
+    app.post('/config/hosts/add',function(req,res){
+        var host=req.body.host;
+        var ip=req.body.ip;
+        
+        config.hosts=config.hosts.filter(function(_host){
+            return _host[0]!=host;
+        });
+        config.hosts.push([host,ip]);
+
+        res.append('Content-Type', 'application/json');
+        res.send(JSON.stringify({msg:"add hosts ok",hosts:config.hosts,'status':0}));
+    });
+    app.post('/config/hosts/delete',function(req,res){
+        var host=req.body.host;
+        
+        config.hosts=config.hosts.filter(function(_host){
+            return _host[0]!=host;
+        });
+
+        res.append('Content-Type', 'application/json');
+        res.send(JSON.stringify({msg:"add hosts ok",hosts:config.hosts,'status':0}));
+    });
+
+    app.post('/config/httpshosts/add',function(req,res){
+        var host=req.body.host;
+        config.delegate_https_hosts=config.delegate_https_hosts.filter(function(_host){
+            return _host!=host;
+        });
+        config.delegate_https_hosts.push(host);
+        res.append('Content-Type', 'application/json');
+        res.send(JSON.stringify({msg:"add hosts ok",delegate_https_hosts:config.delegate_https_hosts,'status':0}));
+    });
+    
+    app.post('/config/httpshosts/delete',function(req,res){
+        var host=req.body.host;
+        config.delegate_https_hosts=config.delegate_https_hosts.filter(function(_host){
+            return _host!=host;
+        });
+        res.append('Content-Type', 'application/json');
+        res.send(JSON.stringify({msg:"add hosts ok",delegate_https_hosts:config.delegate_https_hosts,'status':0}));
+    });
     app.post("/config/autoResponder/add",function(req,res){
         var key=req.body.key;
         var value=req.body.value;

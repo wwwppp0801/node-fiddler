@@ -115,7 +115,6 @@ function create_remote_connecton(request,socket,netType) {
         return remote_socket;
     }
     remote_socket = new net.Socket();
-    remote_socket.request=request;
 
     if(netType===tls){
         var options={
@@ -126,6 +125,7 @@ function create_remote_connecton(request,socket,netType) {
         remote_socket=new tls.TLSSocket(remote_socket, options);
         remote_socket.isTLS=true;
     }
+    remote_socket.request=request;
     remote_socket.socket=socket;
 
     try{

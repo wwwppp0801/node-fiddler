@@ -1,14 +1,14 @@
-#ConfigCtrl.container-fluid(ng-controller="ConfigCtrl")
+#ConfigCtrl.container-fluid(ng-controller="AutoResponderConfigCtrl")
   .row
     .col-md-8
       ul.list-group(ng-init="loadConfig()")
-        li.list-group-item.clearfix( href="#c=RequestListCtrl&id={{req.id}}" ng-repeat="rule in rules")
+        li.list-group-item.clearfix(ng-repeat="rule in rules")
           .pull-left.
             {{rule[0]}} =&gt; <br> {{rule[1]}}
           .pull-right
             a.btn.btn-default(href="javascript:;" ng-click="deleterule(rule[0])") 删除
 
-      form#formAddRule.form-horizontal(action="/config/autoResponder/add" method="post")
+      form.form-horizontal(ng-submit="submitAddRule($event)" method="post")
         .form-group
           .col-sm-offset-2.col-sm-10
             label.radio-inline

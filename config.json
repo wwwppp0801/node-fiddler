@@ -13,7 +13,9 @@
 //        ['www.baidu.com','127.0.0.1'],
     ],
     'auto_responder':[
-        ['https://ss1.bdstatic.com/5eN1bjq8AAUYm2zgoY3K/r/www/cache/static/protocol/https/global/js/all_instant_search1_c37a68b8.js','all_instant_search1_c37a68b8.js'],
+        ['https://ss1.bdstatic.com/5eN1bjq8AAUYm2zgoY3K/r/www/cache/static/protocol/https/global/js/all_async_popstate1_6f2673c8.js','tmp/all_instant_search1_2c505131.js'],
+        ['http://s1.bdstatic.com/r/www/cache/static/global/js/all_instant_search1_3a6acbb0.js','tmp/all_instant_search1_8c644990.js'],
+        ['https://ss1.bdstatic.com/5eN1bjq8AAUYm2zgoY3K/r/www/cache/static/protocol/https/voice/js/voice_7851a312.js','tmp/voice.js'],
         //['http://www.baidu.com/','http://127.0.0.1/'],
         //[/^http:\/\/www\.baidu\.com\/s/,'testresult.html'],
         //[/^http:\/\/www\.baidu\.com\/s/,'testresult.html'],

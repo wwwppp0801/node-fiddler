@@ -7,9 +7,13 @@ angular.module("fiddler",['ngRoute'])
                 templateUrl: 'template/RequestList',
                 controller: 'RequestListCtrl'
             }).
-            when('/ConfigCtrl', {
-                templateUrl: 'template/Config',
-                controller: 'ConfigCtrl'
+            when('/AutoResponderConfigCtrl', {
+                templateUrl: 'template/AutoResponderConfig',
+                controller: 'AutoResponderConfigCtrl'
+            }).
+            when('/OtherConfigCtrl', {
+                templateUrl: 'template/OtherConfig',
+                controller: 'OtherConfigCtrl'
             }).
             otherwise({
                 redirectTo: '/RequestListCtrl'
@@ -47,7 +51,63 @@ angular.module("fiddler",['ngRoute'])
         $scope.curTab=tab;
     }
 }])
-.controller("ConfigCtrl",['$scope','$http',function($scope,$http){
+.controller("OtherConfigCtrl",['$scope','$http',function($scope,$http){
+    $scope.loadConfig=function(){
+        $http.get('/config').success(function(data, status, headers, config) {
+            $scope.delegate_https_hosts=data.delegate_https_hosts;
+            $scope.hosts=data.hosts;
+        });
+    };
+    $scope.submitAddHost=function($event){
+        $.ajax({
+            url:'/config/hosts/add',
+            dataType:'json',
+            type:"post",
+            data:$($event.target).serialize()
+        }).done(function(data){
+            $scope.$apply(function(){
+                $scope.hosts=data.hosts;
+            });
+        });
+    };
+    $scope.deleteHost=function(host){
+        $.ajax({
+            url:'/config/hosts/delete',
+            dataType:'json',
+            type:"post",
+            data:{"host":host}
+        }).done(function(data){
+            $scope.$apply(function(){
+                $scope.hosts=data.hosts;
+            });
+        });
+    };
+    $scope.submitAddHttpsHost=function($event){
+        $.ajax({
+            url:'/config/httpshosts/add',
+            dataType:'json',
+            type:"post",
+            data:$($event.target).serialize()
+        }).done(function(data){
+            $scope.$apply(function(){
+                $scope.delegate_https_hosts=data.delegate_https_hosts;
+            });
+        });
+    };
+    $scope.deleteHttpsHost=function(host){
+        $.ajax({
+            url:'/config/httpshosts/delete',
+            dataType:'json',
+            type:"post",
+            data:{host:host}
+        }).done(function(data){
+            $scope.$apply(function(){
+                $scope.delegate_https_hosts=data.delegate_https_hosts;
+            });
+        });
+    };
+}])
+.controller("AutoResponderConfigCtrl",['$scope','$http',function($scope,$http){
     $scope.loadTempFiles=function(){
         $http.get('/tmpfilelist').success(function(data, status, headers, config) {
             $scope.tempFiles=data;
@@ -68,7 +128,7 @@ angular.module("fiddler",['ngRoute'])
                 $(this).ajaxSubmit({
                     dataType:"json",
                     success:function(data){
-                        $scope.$apply(function(data){
+                        $scope.$apply(function(){
                             $scope.loadTempFiles();
                         });
                     }
@@ -88,26 +148,31 @@ angular.module("fiddler",['ngRoute'])
             $scope.rules=data.rules;
         });
     };
-    $("#formAddRule").submit(function(){
-        $(this).ajaxSubmit({
+    $scope.submitAddRule=function($event){
+        $.ajax({
+            url:"/config/autoResponder/add",
             dataType:"json",
-            success:function(data){
-                $scope.$apply(function(data){
-                    //$scope.message="规则添加成功";
-                    $scope.loadConfig();
-                });
-            }
+            data:$($event.target).serialize(),
+            type:'post'
+        }).done(function(data){
+            $scope.$apply(function(data){
+                //$scope.message="规则添加成功";
+                $scope.loadConfig();
+            });
         });
-        return false;
-    });
+    };
 }])
 .controller("RequestListCtrl",["$scope","socket",function ($scope,socket) {
     //socket.emit('aaa', "data");
     $scope.init=function(){
-      $(window).resize(function (){
-        $("#requests").height($(window).height()-$("#requests").offset().top-30);
-        $("#activeRequestContainer").height($(window).height()-$("#activeRequestContainer").offset().top-30);
-      });
+        function onResize(){
+            $("#requests").height($(window).height()-$("#requests").offset().top-30);
+            $("#activeRequestContainer").height($(window).height()-$("#activeRequestContainer").offset().top-30);
+        }
+        $(window).bind("resize",onResize);
+        $scope.$on("$destroy",function(){
+            $(window).unbind("resize",onResize);
+        });
     };
     socket.on("data",function(data){
         mergeData(data);

@@ -18,5 +18,11 @@ function reload_config(){
         exports.DNSCache[host[0]]={addresses:[host[1]]};
     });
 }
+exports.addDNSCache=function(host,ip){
+   exports.DNSCache[hosts]={addresses:[ip]};
+};
+exports.delDNSCache=function(host){
+   delete  exports.DNSCache[hosts];
+};
 exports.DNSCache={};
 reload_config();

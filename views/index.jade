@@ -16,8 +16,8 @@ html(ng-app="fiddler")
   body
     .navbar-fixed-top.navbar.navbar-default(ng-controller="MainMenu" ng-init="init()")
       .container
-        ul.nav.nav-tabs(ng-init='tabs=["RequestList","Config"]')
+        ul.nav.nav-tabs(ng-init='tabs=["RequestList","AutoResponderConfig","OtherConfig"]')
           li(ng-repeat="tab in tabs" ng-click="setTab(tab)" ng-class='{active:curTab==tab}')
-            a(href="#{{tab}}Ctrl") {{tab}}
+            a(href="#/{{tab}}Ctrl") {{tab}}
     .navbar aaa
     ng-view
