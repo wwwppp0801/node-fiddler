@@ -25,3 +25,5 @@
         .response(ng-class="{hide:detailView!='response'}")
           pre {{activeRequest.response}}
         .auto_responder(ng-class="{hide:detailView!='auto_responder'}")
+          a.btn.btn-primary(ng-if="activeRequest.url" ng-click="addAutoResponderRule(activeRequest.url)") 添加一个规则
+

@@ -1,7 +1,7 @@
 #ConfigCtrl.container-fluid(ng-controller="AutoResponderConfigCtrl")
   .row
     .col-md-8
-      ul.list-group(ng-init="loadConfig()")
+      ul.list-group(ng-init="loadConfig();loadUrlParams();")
         li.list-group-item.clearfix(ng-repeat="rule in rules")
           .pull-left.
             {{rule[0]}} =&gt; <br> {{rule[1]}}
@@ -18,9 +18,9 @@
               input(type="radio" name="keyType" value="RegExp")
               |Regular Expression
         .form-group
-          label.col-sm-2.control-label(for="configKey") Url
+          label.col-sm-2.control-label Url
           .col-sm-10
-            input#configKey.form-control(name="key")
+            input.form-control(name="key" ng-model="form_url")
         .form-group
           .col-sm-offset-2.col-sm-10
             label.radio-inline
@@ -38,7 +38,7 @@
             input#configValue.form-control(name="value")
         .form-group
           .col-sm-offset-2.col-sm-10
-            input.btn.btn-primary(type="submit" ng-click="loadTempFiles()" value="提交")
+            input.btn.btn-primary(type="submit" value="提交")
 
     .col-md-4(ng-init="loadTempFiles()")
       ul.list-group

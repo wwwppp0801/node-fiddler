@@ -107,7 +107,10 @@ angular.module("fiddler",['ngRoute'])
         });
     };
 }])
-.controller("AutoResponderConfigCtrl",['$scope','$http',function($scope,$http){
+.controller("AutoResponderConfigCtrl",['$scope','$http','$location',function($scope,$http,$location){
+    $scope.loadUrlParams=function(){
+        $scope.form_url=$location.search().url;
+    };
     $scope.loadTempFiles=function(){
         $http.get('/tmpfilelist').success(function(data, status, headers, config) {
             $scope.tempFiles=data;
@@ -162,8 +165,11 @@ angular.module("fiddler",['ngRoute'])
         });
     };
 }])
-.controller("RequestListCtrl",["$scope","socket",function ($scope,socket) {
+.controller("RequestListCtrl",["$scope","socket","$location",function ($scope,socket,$location) {
     //socket.emit('aaa', "data");
+    $scope.addAutoResponderRule=function(url){
+        $location.url("/AutoResponderConfigCtrl?url="+encodeURIComponent(url));
+    }
     $scope.init=function(){
         function onResize(){
             $("#requests").height($(window).height()-$("#requests").offset().top-30);

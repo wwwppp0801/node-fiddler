@@ -24,6 +24,27 @@ exports.dataLogger=(function(){
 })();
 var sockets=[];
 (function(){
+    Object.prototype.Clone = function(){
+        var objClone;
+        if ( this.constructor == Object ) objClone = new this.constructor(); 
+        else objClone = new this.constructor(this.valueOf()); 
+        for ( var key in this ){
+            if ( objClone[key] != this[key] ){ 
+                if ( typeof(this[key]) == 'object' ){ 
+                    objClone[key] = this[key].Clone();
+                }
+                else {
+                    objClone[key] = this[key];
+                }
+            }
+        }
+        objClone.toString = this.toString;
+        objClone.valueOf = this.valueOf;
+        return objClone; 
+    };
+
+
+
     var express = require('express');
     var app = express();
     
@@ -49,7 +70,7 @@ var sockets=[];
         res.render(req.params.template+'.jade');
     });
     app.get('/config',function(req,res){
-        res.send(JSON.stringify(config));
+        res.send(JSON.stringify({"hosts":config.hosts,"delegate_https_hosts":config.delegate_https_hosts,"auto_responder":stringify_regexp(config.auto_responder)}));
     });
     
     if(!fs.existsSync('tmp')){
@@ -74,12 +95,23 @@ var sockets=[];
         res.append('Content-Type', 'application/json');
         res.send(JSON.stringify({msg:"delete ok",'status':0}));
     });
+    function stringify_regexp(rules){
+        rules=rules.Clone();
+        rules.forEach(function(rule){
+            rule.forEach(function(v,i){
+                if(v instanceof RegExp){
+                    rule[i]="RegExp:"+v.toString();
+                }
+            });
+        });
+        return rules;
+    }
     app.get("/deleterule/:file",function(req,res){
         config.auto_responder=config.auto_responder.filter(function(rule){
             return rule[0].toString()!=req.params.file;
         });
         res.append('Content-Type', 'application/json');
-        res.send(JSON.stringify({rules:config.auto_responder,msg:"add autoResponder ok",'status':0}));
+        res.send(JSON.stringify({rules:stringify_regexp(config.auto_responder),msg:"add autoResponder ok",'status':0}));
     });
     
     app.get('/tmpfilelist',function(req,res){
@@ -134,7 +166,7 @@ var sockets=[];
     app.post("/config/autoResponder/add",function(req,res){
         var key=req.body.key;
         var value=req.body.value;
-        if(req.body.keyType=='regexp'){
+        if(req.body.keyType.toLocaleLowerCase()=='regexp'){
             key=new RegExp(key);
         }
         config.auto_responder=config.auto_responder.filter(function(rule){
@@ -142,7 +174,7 @@ var sockets=[];
         });
         config.auto_responder.push([key,value]);
         res.append('Content-Type', 'application/json');
-        res.send(JSON.stringify({msg:"add autoResponder ok",'status':0}));
+        res.send(JSON.stringify({msg:"add autoResponder ok",rules:stringify_regexp(config.auto_responder),'status':0}));
     });
     var server = require('http').Server(app);
     var io = require('socket.io')(server);
