@@ -93,7 +93,9 @@ exports.local_request=function local_request(bm,netType){
             var tmp=[];
             var headers=this.getHeader();
             for(var h in headers){
-                tmp.push(h+":"+headers[h]);
+                if(headers.hasOwnProperty(h)){
+                    tmp.push(h+":"+headers[h]);
+                }
             }
             return this.getMethod()+" "+this.getQueryString()+" HTTP/"+this.getHttpVersion()+CRLF+
                 tmp.join(CRLF)+CRLF+CRLF;
