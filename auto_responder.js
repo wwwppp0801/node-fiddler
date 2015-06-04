@@ -126,21 +126,29 @@ var strategy={
                 //console.log('BODY: ' + chunk);
                 bm.add(chunk);
             });
-            res.on("end",function(){
+
+            socket.on("end", function() {
+                //client aborted
+                socket.is_end=true;
+            });
+            function send_to_local(){
                 log.info("send to local");
                 var data=bm.slice(0);
                 if(typeof callback=='function'){
                     data=new Buffer(callback(data.toString('utf-8')));
                 }
-
-                socket.write(['HTTP/1.1 200 OK',
-                        'Content-Type: '+res.headers['content-type'],//get_content_type(file.name),
-                        'Cache-Control: private',
-                        'Content-Length: '+data.length].join(CRLF)+CRLF+CRLF);
+                if(!socket.is_end){
+                    socket.write(['HTTP/1.1 200 OK',
+                            'Content-Type: '+res.headers['content-type'],//get_content_type(file.name),
+                            'Cache-Control: private',
+                            'Content-Length: '+data.length].join(CRLF)+CRLF+CRLF);
+                    socket.write(data);
+                }
+                ///TODO  should tell dataLogger, if socket.is_end
                 dataLogger.data(request,"responseHeader",JSON.stringify(res.headers));
                 dataLogger.data(request,"response",data);
-                socket.write(data);
-            });
+            }
+            res.on("end",send_to_local);
             res.on("close",function(){
                 socket.end();
                 socket.destroy();

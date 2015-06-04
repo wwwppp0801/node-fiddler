@@ -187,6 +187,15 @@ function create_remote_connecton(request,socket,netType) {
             && response.responseIsEnd(bm) 
             ){
             dataLogger.data(this.request,"responseHeader",response.getRawHeader());
+            //dataLogger.data(this.request,"response",response.getBody().toString());
+            dataLogger.data(this.request,"responseType",response.getContentType());
+            /*
+            if(response.isText()){
+                dataLogger.data(this.request,"response",response.getBody().toString());
+            }else{
+                var filename=dataLogger.newfile(this.request,response);
+                dataLogger.data(this.request,"response",filename);
+            }*/
             dataLogger.data(this.request,"response",response.getBody().toString());
             log.info("response end:"+response.getResponseCode()+":"+this.request.getUrl().href);
 
@@ -217,7 +226,7 @@ function create_remote_connecton(request,socket,netType) {
             clean_remote_socket(remote_socket);
             log.error("can't write to cached connection");
             log.error(e);
-            throw e;
+            //throw e;
         }
     }
     return remote_socket;
@@ -354,6 +363,7 @@ function createServerCallbackFunc(netType){//netType is tls or net
                     //透传的请求就不用往下走了
                     dataLogger.data(request,"url",request.getUrl().href);
                     dataLogger.data(request,"requestHeader",request.getSendHeader());
+                    dataLogger.data(request,"requestCurl",request.getCurlCmd());
                 }
                 if(matchAutoResponder(request,socket)===true){
                     return;
@@ -374,6 +384,10 @@ function createServerCallbackFunc(netType){//netType is tls or net
                     remote_socket.write(bm.toBuffer());
                     remote_socket.pipe(socket);
                     socket.pipe(remote_socket);
+                });
+                remote_socket.on("error", function() {
+                    clean_client_socket(this);
+                    log.error("connect http channel error");
                 });
             }
             

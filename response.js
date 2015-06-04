@@ -29,6 +29,13 @@ exports.remote_response=function remote_response(bm){
         getHttpVersion:function(){
             return version;
         },
+        getContentType:function(){
+            var content_type=this.getHeader("Content-Type");
+            return content_type?content_type:"unknown";
+        },
+        isText:function(){
+            return !!this.getContentType().match(/text|json|html/i);
+        },
         getHeader:(function(){
             var headers;
             return function (name){

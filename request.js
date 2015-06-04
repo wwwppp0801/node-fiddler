@@ -51,6 +51,16 @@ exports.local_request=function local_request(bm,netType){
         }
     }
     return {
+        getCurlCmd:function(){
+            var cmd="curl \""+this.getUrl()+"\"";
+            var headers=this.getHeader();
+            for(var h in headers){
+                if(headers.hasOwnProperty(h)){
+                    cmd+=" -H '"+h+":"+"' ";
+                }
+            }
+            return cmd;
+        },
         getBody:function(){
             return body;
         },
