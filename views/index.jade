@@ -12,6 +12,8 @@ html(ng-app="fiddler")
     title Fiddler
     style.
       #requests,#activeRequestContainer{overflow:auto;overflow-y: auto; overflow-x: hidden; }
+      #activeRequestContainer h7{word-break:break-all;}
+      .list-group-item{word-break:break-all;}
 
   body
     .navbar-fixed-top.navbar.navbar-default(ng-controller="MainMenu" ng-init="init()")

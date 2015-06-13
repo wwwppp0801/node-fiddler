@@ -363,7 +363,7 @@ function createServerCallbackFunc(netType){//netType is tls or net
                     //透传的请求就不用往下走了
                     dataLogger.data(request,"url",request.getUrl().href);
                     dataLogger.data(request,"requestHeader",request.getSendHeader());
-                    dataLogger.data(request,"requestCurl",request.getCurlCmd());
+                    dataLogger.data(request,"curl",request.getCurlCmd());
                 }
                 if(matchAutoResponder(request,socket)===true){
                     return;

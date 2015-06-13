@@ -12,18 +12,24 @@
           a Request Header
         li(ng-click="setDetailView('response_header')" ng-class="{'active':detailView=='response_header'}")
           a Response Header
-        li(ng-click="setDetailView('response')" ng-class="{'active':detailView=='response'}")
-          a Response
+
+        //li(ng-click="setDetailView('response')" ng-class="{'active':detailView=='response'}")
+        //  a Response
         li(ng-click="setDetailView('auto_responder')" ng-class="{'active':detailView=='auto_responder'}")
           a AutoResponder
+        li(ng-click="setDetailView('curl')" ng-class="{'active':detailView=='curl'}")
+          a curl
       #activeRequestContainer(ng-init='activeRequest={}')
         .header(ng-class="{hide:detailView!='request_header'}")
           h7 {{activeRequest.url}}
           pre {{activeRequest.requestHeader}}
         .header(ng-class="{hide:detailView!='response_header'}")
           pre {{activeRequest.responseHeader}}
-        .response(ng-class="{hide:detailView!='response'}")
-          pre {{activeRequest.response}}
+
+        //.response(ng-class="{hide:detailView!='response'}")
+        //  pre {{activeRequest.response}}
+        .curl(ng-class="{hide:detailView!='curl'}")
+          pre {{activeRequest.curl}}
         .auto_responder(ng-class="{hide:detailView!='auto_responder'}")
           a.btn.btn-primary(ng-if="activeRequest.url" ng-click="addAutoResponderRule(activeRequest.url)") 添加一个规则
 

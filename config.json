@@ -13,7 +13,9 @@
 //        ['www.baidu.com','127.0.0.1'],
     ],
     'auto_responder':[
-        ['http://m1-ps-wwwui0-j10.m1.baidu.com:8090/cache/static/global/js/all_instant_search1_d5664292.js','instant_search.js'],
+        ['http://s1.bdstatic.com/r/www/cache/static/global/js/all_async_popstate1_4c0af2db.js','http://m1-ps-wwwui0-j10.m1.baidu.com:8090/cache/static/global/js/all_async_popstate1.js'],
+        ['http://cq01-vrp-a05-009-bbtocq.cq01.baidu.com:8012/cache/static/global/js/all_async_search_d239f683.js','http://m1-ps-wwwui0-j10.m1.baidu.com:8090/cache/static/global/js/all_async_search.js'],
+        [/^http:\/\/cq01-vrp-a05-009-bbtocq\.cq01\.baidu\.com\:8012\/s\?(.*)/,'http://www.baidu.com/s?{1}'],
         ['https://m.baidu.com/','/Users/wp/Projects/baidu/wise/index.html'],
         ['https://m.baidu.com/','/Users/wp/Projects/baidu/wise/index_lsv.html'],
         ['http://cdn.iknow.bdimg.com/static/common/lib/mod_96dd55b.js','a.js'],
