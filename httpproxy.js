@@ -419,5 +419,8 @@ var httpsServer=tls.createServer(httpsOptions,
 httpsServer.maxConnections=config.max_connections;
 httpsServer.listen(config.listen_https_port,config.listen_host);
 
+console.log("config:     "+__dirname+"/config.json");
+console.log("proxy:      "+config.listen_host+":"+config.listen_port);
+console.log("frontend:   http://"+config.listen_host+":"+config.listen_config_port);
 
 ///////////http config server/////////////////////
