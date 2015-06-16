@@ -13,10 +13,10 @@
     }
   ],
   "scripts" :{ 
-      "postinstall" : "bower install",
+      "postinstall" : "bower install"
   },
   "bin": {
-      "node-fiddler": "./bin/node-fiddler.js",
+      "node-fiddler": "./bin/node-fiddler.js"
   },
 
   "license": "MIT",
