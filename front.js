@@ -1,6 +1,7 @@
 var config=require("./config");
 var log = require("./log").instance;
 var fs=require("fs");
+var events=require("events");
 exports.dataLogger=(function(){
     var createUUID = (function (uuidRegEx, uuidReplacer) { 
         return function () { 
@@ -11,16 +12,18 @@ exports.dataLogger=(function(){
         v = c == "x" ? r : (r & 3 | 8); 
         return v.toString(16); 
     });
-    return {
-        data:function(request,type,data){
-            if(!request.LogId){
-                request.LogId=createUUID();
-            }
-            sockets.forEach(function(s){
-                s.emit("data",{id:request.LogId,type:type,data:data});
-            });
+    var logger=new events.EventEmitter();
+    logger.data=function(request,type,data){
+        if(!request.LogId){
+            request.LogId=createUUID();
         }
-    }
+        var eventData={id:request.LogId,type:type,data:data};
+        sockets.forEach(function(s){
+            s.emit("data",eventData);
+        });
+        logger.emit("data",eventData);
+    };
+    return logger;
 })();
 var sockets=[];
 (function(){

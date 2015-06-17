@@ -99,7 +99,7 @@ function create_remote_connecton(request,socket,netType) {
     }
     var hostname= url.hostname;
     if(request.getMethod()=='CONNECT'&&port=='443'&&config.delegate_https_hosts.indexOf(hostname)!=-1){
-        log.info("delegate https request to 127.0.0.1");
+        log.debug("delegate https request to 127.0.0.1");
         hostname=config.listen_host;
         port=config.listen_https_port;
     }
@@ -111,7 +111,7 @@ function create_remote_connecton(request,socket,netType) {
         remote_socket.request=request;
         log.debug("restore remote connection from pool");
         remote_socket_on_connect.apply(remote_socket);
-        log.info("write to cached connection:"+remote_socket.request.getUrl().href);
+        log.debug("write to cached connection:"+remote_socket.request.getUrl().href);
         return remote_socket;
     }
     remote_socket = new net.Socket();
@@ -156,7 +156,7 @@ function create_remote_connecton(request,socket,netType) {
     });
     var response;
     remote_socket.on('data',function(buf){
-        log.info("recv remote data length:"+buf.length+":"+this.request.getUrl().href);
+        log.debug("recv remote data length:"+buf.length+":"+this.request.getUrl().href);
         if(!this.bm){
             this.bm=new BufferManager();
         }
@@ -178,7 +178,7 @@ function create_remote_connecton(request,socket,netType) {
             && response.getResponseCode()<200//100－199都是报状态的，响应还没结束
             && response.getResponseCode()>=100
             ){
-            log.info("recv 1xx response:"+response.getResponseCode());
+            log.debug("recv 1xx response:"+response.getResponseCode());
             response=false;
             return;
         }
@@ -197,7 +197,7 @@ function create_remote_connecton(request,socket,netType) {
                 dataLogger.data(this.request,"response",filename);
             }*/
             dataLogger.data(this.request,"response",response.getBody().toString());
-            log.info("response end:"+response.getResponseCode()+":"+this.request.getUrl().href);
+            log.debug("response end:"+response.getResponseCode()+":"+this.request.getUrl().href);
 
             if(response.isKeepAlive()){
                 release_connection(this);
@@ -271,50 +271,6 @@ function clean_client_socket(socket) {
 
 
 
-function parse_server_cmd(bm){
-    var start=bm.indexOf(SERVER_CMD_START),
-        end=bm.indexOf(SERVER_CMD_END);
-    if(start!=0 || end==-1){
-        return null;
-    }
-    var cmd=bm.slice(SERVER_CMD_START.length,end-SERVER_CMD_END.length).toString();
-    bm.delete(end+SERVER_CMD_END.length);
-    log.debug('recieved server command:'+cmd);
-    return cmd;
-}
-
-//TODO
-var COMMAND_TABLE={
-    list:function(){
-         },
-    info:function(){
-         },
-    loadconf:function(){
-        },
-    dnsshow:function(){
-        },
-    dnsclean:function(){         
-        }
-}
-
-
-function process_server_cmd(cmd,socket){
-    var tokens=cmd.split(/\s+/);
-    var cmd_type=tokens[0].toLowerCase();
-    if(COMMAND_TABLE.hasOwnProperty(cmd_type)){
-        result=COMMAND_TABLE[cmd_type](tokens.slice(1));
-    }else{
-        log.error('not implement: "'+cmd+'"');
-        result='not implement';
-    }
-    var bm=new BufferManager(
-            new Buffer(SERVER_CMD_START),
-            new Buffer(JSON.stringify(result)),
-            new Buffer(SERVER_CMD_END)
-            );
-    socket.write(bm.toBuffer());
-}
-
 
 
 function createServerCallbackFunc(netType){//netType is tls or net
@@ -341,14 +297,6 @@ function createServerCallbackFunc(netType){//netType is tls or net
             }
             bm.add(buf);
 
-            var server_cmd=parse_server_cmd(bm);
-            if(server_cmd){
-                log.debug(server_cmd);
-            }
-            if(server_cmd){
-                process_server_cmd(server_cmd,this);
-                return;
-            }
             var request=local_request(bm,netType);
 
 
@@ -358,7 +306,7 @@ function createServerCallbackFunc(netType){//netType is tls or net
             }
 
             if(request){
-                log.info("recieve:"+request.getUrl().href);
+                log.debug("recieve:"+request.getUrl().href);
                 if(request.getMethod()!="CONNECT"){
                     //透传的请求就不用往下走了
                     dataLogger.data(request,"url",request.getUrl().href);
@@ -375,7 +323,7 @@ function createServerCallbackFunc(netType){//netType is tls or net
             if(request&&request.getMethod()=='CONNECT'){
                 remote_socket.removeAllListeners("connect");
                 remote_socket.removeAllListeners("data");
-                log.info("http connect, create http channel");
+                log.debug("http connect, create http channel");
                 remote_socket.on("connect",function(){
                     socket.removeAllListeners("data");
                     socket.write('HTTP/1.1 200 Connection Established\r\n' +
@@ -404,23 +352,28 @@ function createServerCallbackFunc(netType){//netType is tls or net
     }
 }
 
+exports.start=function(){
+    var httpServer=net.createServer(
+        createServerCallbackFunc(net)
+    );
+    httpServer.maxConnections=config.max_connections;
+    httpServer.listen(config.listen_port,config.listen_host);
 
-var httpServer=net.createServer(
-    createServerCallbackFunc(net)
-);
-httpServer.maxConnections=config.max_connections;
-httpServer.listen(config.listen_port,config.listen_host);
 
 
+    var httpsServer=tls.createServer(httpsOptions,
+        createServerCallbackFunc(tls)
+    );
+    httpsServer.maxConnections=config.max_connections;
+    httpsServer.listen(config.listen_https_port,config.listen_host);
 
-var httpsServer=tls.createServer(httpsOptions,
-    createServerCallbackFunc(tls)
-);
-httpsServer.maxConnections=config.max_connections;
-httpsServer.listen(config.listen_https_port,config.listen_host);
-
-console.log("config:     "+__dirname+"/config.json");
-console.log("proxy:      "+config.listen_host+":"+config.listen_port);
-console.log("frontend:   http://"+config.listen_host+":"+config.listen_config_port);
-
+    console.log("config:     "+__dirname+"/config.json");
+    console.log("proxy:      "+config.listen_host+":"+config.listen_port);
+    console.log("frontend:   http://"+config.listen_host+":"+config.listen_config_port);
+}
+exports.on=function(ev,listener){
+    if(ev=='data'){
+        dataLogger.on("data",listener);
+    }
+};
 ///////////http config server/////////////////////
