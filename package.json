@@ -1,7 +1,7 @@
 {
   "name": "node-fiddler",
   "description": "a http proxy, can delegate request to other url or local file, and have a simple webui",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "author": {
     "name": "Wang Peng",
     "email": "wwwppp0801@qq.com"
