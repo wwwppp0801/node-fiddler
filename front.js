@@ -27,14 +27,14 @@ exports.dataLogger=(function(){
 })();
 var sockets=[];
 (function(){
-    Object.prototype.Clone = function(){
+    function Clone(){
         var objClone;
         if ( this.constructor == Object ) objClone = new this.constructor(); 
         else objClone = new this.constructor(this.valueOf()); 
         for ( var key in this ){
             if ( objClone[key] != this[key] ){ 
                 if ( typeof(this[key]) == 'object' ){ 
-                    objClone[key] = this[key].Clone();
+                    objClone[key] = Clone(this[key]);
                 }
                 else {
                     objClone[key] = this[key];
@@ -99,7 +99,7 @@ var sockets=[];
         res.send(JSON.stringify({msg:"delete ok",'status':0}));
     });
     function stringify_regexp(rules){
-        rules=rules.Clone();
+        rules=Clone(rules);
         rules.forEach(function(rule){
             rule.forEach(function(v,i){
                 if(v instanceof RegExp){
@@ -195,4 +195,8 @@ var sockets=[];
     });
 
     server.listen(config.listen_config_port);
+    exports.close=function(callback){
+        io.close(callback);
+        server.close(callback);
+    };
 })();

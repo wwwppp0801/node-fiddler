@@ -10,7 +10,8 @@ var optparser = require("./optparser");
 var BufferManager=require('./buffermanager').BufferManager;
 var local_request=require('./request').local_request;
 var remote_response=require('./response').remote_response;
-var dataLogger=require('./front').dataLogger;
+var frontend=require("./front");
+var dataLogger=frontend.dataLogger;
 var config=require("./config");
 var matchAutoResponder=require("./auto_responder").matchAutoResponder;
 
@@ -20,8 +21,8 @@ var DNSCache=config.DNSCache;
 //DNSCache['www.baidu.com']={addresses:['127.0.0.1']};
 
 var httpsOptions = {
-  key: fs.readFileSync('server-key.pem'),
-  cert: fs.readFileSync('server-cert.pem'),
+  key: fs.readFileSync(__dirname+'/server-key.pem'),
+  cert: fs.readFileSync(__dirname+'/server-cert.pem'),
 
   // This is necessary only if using the client certificate authentication.
   //requestCert: false,
@@ -352,8 +353,10 @@ function createServerCallbackFunc(netType){//netType is tls or net
     }
 }
 
+
+var httpServer,httpsServer;
 exports.start=function(){
-    var httpServer=net.createServer(
+    httpServer=net.createServer(
         createServerCallbackFunc(net)
     );
     httpServer.maxConnections=config.max_connections;
@@ -361,19 +364,35 @@ exports.start=function(){
 
 
 
-    var httpsServer=tls.createServer(httpsOptions,
+    httpsServer=tls.createServer(httpsOptions,
         createServerCallbackFunc(tls)
     );
     httpsServer.maxConnections=config.max_connections;
     httpsServer.listen(config.listen_https_port,config.listen_host);
+    config.watch();
 
     console.log("config:     "+__dirname+"/config.json");
     console.log("proxy:      "+config.listen_host+":"+config.listen_port);
     console.log("frontend:   http://"+config.listen_host+":"+config.listen_config_port);
-}
+};
+exports.close=function(){
+    httpServer.close(function(){
+        console.log("http closed");
+    });
+    httpsServer.close(function(){
+        console.log("https closed");
+    });
+    frontend.close(function(){
+        console.log("frontend closed");
+    });    
+    config.unwatch();
+};
 exports.on=function(ev,listener){
     if(ev=='data'){
         dataLogger.on("data",listener);
     }
 };
+
+
+
 ///////////http config server/////////////////////

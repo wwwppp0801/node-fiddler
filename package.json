@@ -1,24 +1,23 @@
 {
   "name": "node-fiddler",
   "description": "a http proxy, can delegate request to other url or local file, and have a simple webui",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "author": {
     "name": "Wang Peng",
     "email": "wwwppp0801@qq.com"
   },
   "maintainers": [
     {
-        "name": "Wang Peng",
-        "email": "wwwppp0801@qq.com"
+      "name": "Wang Peng",
+      "email": "wwwppp0801@qq.com"
     }
   ],
-  "scripts" :{ 
-      "postinstall" : "bower install"
+  "scripts": {
+    "postinstall": "bower install"
   },
   "bin": {
-      "node-fiddler": "./bin/node-fiddler.js"
+    "node-fiddler": "./bin/node-fiddler.js"
   },
-
   "license": "MIT",
   "dependencies": {
     "body-parser": "^1.12.0",
@@ -26,5 +25,11 @@
     "express": "^4.12.0",
     "jade": "^1.9.2",
     "socket.io": "^1.3.4"
-  }
+  },
+  "readme": "# node-fiddler\n\n- 这是node写的http代理\n- 基于socket，纯手工编写，支持keep-alive, chunked等功能\n- 可以实现fiddler的auto\\_responder功能(就是将某个请求用本地文件返回)\n- 可以实现类似改hosts文件的功能\n- 可以实现https的反向代理和内容劫持，但用的是不合法证书（可以用自己的合法证书替换）\n- 实现了http的connect方法\n\n# config.json介绍\n- 可以在proxy启动的状态下，改变config.json文件的内容，会自动生效\n```javascript\n({\n    'listen_host':'127.0.0.1',\n    'listen_port':'8083',\n    'max_connections':1000,\n    'hosts':[\n//        ['www.baidu.com','127.0.0.1'],\n    ],\n    'auto_responder':[\n\n        ['http://www.baidu.com/','file:test.html'],\n        //['http://www.baidu.com/','http://127.0.0.1/'],\n        //[/^http:\\/\\/www\\.baidu\\.com\\/s/,'testresult.html'],\n        //[/^http:\\/\\/www\\.baidu\\.com\\/s/,'testresult.html'],\n        //替换成和query同名的文件\n        //[/^http:\\/\\/www\\.baidu\\.com\\/s?.*wd=(\\w+)/,'file:{1}.html'],\n        //替换目录\n        //[/^http:\\/\\/m1-ps-wwwui0-j10\\.m1\\.baidu\\.com:8090\\/cache/(.*)/,'file:{pwd}/cache/{1}'],\n        //全部替换成wd=qq\n        [/^http:\\/\\/www\\.baidu\\.com\\/s/,'{_}?wd=qq'],\n\n        //高级功能，走回调\n        \n        [\"http://s1.bdstatic.com/r/www/cache/static/global/js/all_async_popstate_40a67976.js\",\"{_}\",function(code){\n            code+=\";alert('testtest');\";\n            return code;\n        }],\n        \n    ],\n})\n\n```\n\n# 使用方法\n\n```bash\nnode httpproxy.js\n```\n\n\n# 尚未解决的已知问题\n\n- <del>没有实现multipart/form-data，上传文件可能会有问题</del>\n- <del>没有实现https协议的代理</del>\n",
+  "readmeFilename": "README.md",
+  "gitHead": "a90e293389e4e249b15c7ce4c8fc570a28aa9295",
+  "_id": "node-fiddler@1.0.4",
+  "_shasum": "5407efd538306c89e8596dac5b69685a33ed16ba",
+  "_from": "node-fiddler@*"
 }
