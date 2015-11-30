@@ -27,14 +27,20 @@ exports.dataLogger=(function(){
 })();
 var sockets=[];
 (function(){
-    function Clone(){
+    function Clone(obj){
+        return JSON.parse(JSON.stringify(obj));
+        /*
         var objClone;
         if ( this.constructor == Object ) objClone = new this.constructor(); 
-        else objClone = new this.constructor(this.valueOf()); 
+        else if(typeof this.valueOf=='function') objClone = new this.constructor(this.valueOf()); 
+        else {return this};
         for ( var key in this ){
+            if(!this.hasOwnProperty(key)){
+                continue;
+            }
             if ( objClone[key] != this[key] ){ 
-                if ( typeof(this[key]) == 'object' ){ 
-                    objClone[key] = Clone(this[key]);
+                if ( typeof(this[key]) == 'object' && this[key]!==this ){ 
+                    objClone[key] = Clone.apply(this[key]);
                 }
                 else {
                     objClone[key] = this[key];
@@ -43,7 +49,8 @@ var sockets=[];
         }
         objClone.toString = this.toString;
         objClone.valueOf = this.valueOf;
-        return objClone; 
+        return objClone;
+        */
     };
 
 
