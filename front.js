@@ -69,15 +69,16 @@ var sockets=[];
 
     app.use(express.static("./static"));
     app.use(express.static("./bower_components"));
-    app.engine('jade', require('jade').__express);
+    app.engine('pug', require('pug').__express);
+    app.set('view engine', 'pug');
     app.locals.pretty=true;
     app.get('/', function(req, res){
         //res.send('hello world');
-        res.render('index.jade');
+        res.render('index');
     });
     app.get('/template/:template', function(req, res){
         //res.send('hello world');
-        res.render(req.params.template+'.jade');
+        res.render(req.params.template);
     });
     app.get('/config',function(req,res){
         res.send(JSON.stringify({"hosts":config.hosts,"delegate_https_hosts":config.delegate_https_hosts,"auto_responder":stringify_regexp(config.auto_responder)}));
@@ -86,11 +87,14 @@ var sockets=[];
     if(!fs.existsSync('tmp')){
         fs.mkdirSync("tmp");
     }
-    var multipart = require('connect-multiparty');
-    app.post('/upload', multipart({uploadDir:'tmp'}), function(req, res) {
-        fs.renameSync(req.files.file.path, "tmp/"+req.files.file.originalFilename);
+    var multer = require('multer');
+    var upload = multer({ dest: 'tmp/' });
+    app.post('/upload', upload.single('file'), function(req, res) {
+        if (req.file) {
+            fs.renameSync(req.file.path, "tmp/"+req.file.originalname);
+        }
         res.append('Content-Type', 'application/json');
-        res.send(JSON.stringify({body:req.body, files:req.files}));
+        res.send(JSON.stringify({body:req.body, file:req.file}));
         // don't forget to delete all req.files when done 
     });
 
